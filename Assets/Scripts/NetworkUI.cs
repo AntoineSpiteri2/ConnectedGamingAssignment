@@ -2,6 +2,7 @@ using UnityEngine;
 using Unity.Netcode;
 using UnityEngine.UI;
 using Unity.Netcode.Transports.UTP;
+using System;
 public class NetworkUI : MonoBehaviour
 {
     [SerializeField] private Button ServerButton;
@@ -19,26 +20,57 @@ public class NetworkUI : MonoBehaviour
 
     private void StartServer()
     {
-        NetworkManager.Singleton.StartServer();
-        Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
-        CheckIfRunningLocally();
-        Destroy(Panel);
+        try
+        {
+            if (!NetworkManager.Singleton.StartServer())
+            {
+                Debug.LogError("Failed to start server.");
+                return;
+            }
+            Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
+            CheckIfRunningLocally();
+            Destroy(Panel);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception occurred while starting server: {ex.Message}");
+        }
     }
     
-    private void StartClient()
+   void StartClient()
     {
-        NetworkManager.Singleton.StartClient();
-        Destroy(Panel);
-
+        try
+        {
+            if (!NetworkManager.Singleton.StartClient())
+            {
+                Debug.LogError("Failed to start client.");
+                return;
+            }
+            Destroy(Panel);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception occurred while starting client: {ex.Message}");
+        }
     }
 
     private void StartHost()
     {
-        NetworkManager.Singleton.StartHost();
-        Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
-        CheckIfRunningLocally();
-        Destroy(Panel);
-
+        try
+        {
+            if (!NetworkManager.Singleton.StartHost())
+            {
+                Debug.LogError("Failed to start host.");
+                return;
+            }
+            Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
+            CheckIfRunningLocally();
+            Destroy(Panel);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception occurred while starting host: {ex.Message}");
+        }
     }
 
     private void CheckIfRunningLocally()

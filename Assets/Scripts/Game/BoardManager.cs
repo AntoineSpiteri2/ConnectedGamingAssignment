@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityChess;
 using UnityEngine;
 using static UnityChess.SquareUtil;
@@ -8,9 +9,12 @@ using static UnityChess.SquareUtil;
 /// Manages the visual representation of the chess board and piece placement.
 /// Inherits from MonoBehaviourSingleton to ensure only one instance exists.
 /// </summary>
-public class BoardManager : MonoBehaviourSingleton<BoardManager> {
-	// Array holding references to all square GameObjects (64 squares for an 8x8 board).
-	private readonly GameObject[] allSquaresGO = new GameObject[64];
+public class BoardManager : NetworkBehaviour{
+
+    public static BoardManager Instance { get; private set; }
+
+    // Array holding references to all square GameObjects (64 squares for an 8x8 board).
+    private readonly GameObject[] allSquaresGO = new GameObject[64];
 	// Dictionary mapping board squares to their corresponding GameObjects.
 	private Dictionary<Square, GameObject> positionMap;
 	// Constant representing the side length of the board plane (from centre to centre of corner squares).
@@ -25,8 +29,11 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager> {
 	/// Sets up the board, subscribes to game events, and creates the square GameObjects.
 	/// </summary>
 	private void Awake() {
-		// Subscribe to game events to update the board when a new game starts or when the game is reset.
-		GameManager.NewGameStartedEvent += OnNewGameStarted;
+
+        if (Instance == null) Instance = this;
+
+        // Subscribe to game events to update the board when a new game starts or when the game is reset.
+        GameManager.NewGameStartedEvent += OnNewGameStarted;
 		GameManager.GameResetToHalfMoveEvent += OnGameResetToHalfMove;
 		
 		// Initialise the dictionary to map board squares to GameObjects.
@@ -117,20 +124,25 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager> {
 		rookGO.transform.localPosition = Vector3.zero;
 	}
 
-	/// <summary>
-	/// Instantiates and places the visual representation of a piece on the board.
-	/// </summary>
-	/// <param name="piece">The chess piece to display.</param>
-	/// <param name="position">The board square where the piece should be placed.</param>
-	public void CreateAndPlacePieceGO(Piece piece, Square position) {
-		// Construct the model name based on the piece's owner and type.
-		string modelName = $"{piece.Owner} {piece.GetType().Name}";
-		// Instantiate the piece GameObject from the corresponding resource.
-		GameObject pieceGO = Instantiate(
-			Resources.Load("PieceSets/Marble/" + modelName) as GameObject,
-			positionMap[position].transform
-		);
-	}
+    /// <summary>
+    /// Instantiates and places the visual representation of a piece on the board.
+    /// </summary>
+    /// <param name="piece">The chess piece to display.</param>
+    /// <param name="position">The board square where the piece should be placed.</param>
+    /// 
+
+	public void CreateAndPlacePieceGO(Piece piece, Square position)
+    {
+        if (!IsServer) return; // Ensure only the server can execute this method
+
+        // Construct the model name based on the piece's owner and type.
+        string modelName = $"{piece.Owner} {piece.GetType().Name}";
+        // Instantiate the piece GameObject from the corresponding resource.
+        GameObject pieceGO = Instantiate(
+            Resources.Load("PieceSets/Marble/" + modelName) as GameObject,
+            positionMap[position].transform
+        );
+    }
 
 	/// <summary>
 	/// Retrieves all square GameObjects within a specified radius of a world-space position.
