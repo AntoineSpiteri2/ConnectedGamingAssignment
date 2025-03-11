@@ -4,23 +4,59 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityChess;
 using UnityEngine;
+using Unity.Netcode;
+using Unity.Netcode.Transports.UTP;
+
 
 /// <summary>
 /// Manages the overall game state, including game start, moves execution,
 /// special moves handling (such as castling, en passant, and promotion), and game reset.
 /// Inherits from a singleton base class to ensure a single instance throughout the application.
 /// </summary>
-public class GameManager : MonoBehaviourSingleton<GameManager> {
-	// Events signalling various game state changes.
-	public static event Action NewGameStartedEvent;
+public class GameManager : NetworkBehaviour {
+
+    public static GameManager Instance { get; private set; }
+    private void Awake()
+    {
+		
+        if (Instance == null) Instance = this;
+
+    }
+
+    private NetworkVariable<bool> isWhiteTurn = new NetworkVariable<bool>(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+        {
+            Debug.Log("GameManager initialized on the server.");
+        }
+    }
+    // Events signalling various game state changes.
+    public static event Action NewGameStartedEvent;
 	public static event Action GameEndedEvent;
 	public static event Action GameResetToHalfMoveEvent;
 	public static event Action MoveExecutedEvent;
-	
-	/// <summary>
-	/// Gets the current board state from the game.
-	/// </summary>
-	public Board CurrentBoard {
+
+
+
+
+
+    private void OnClientConnected(ulong clientId)
+    {
+        Debug.Log($"Client {clientId} connected.");
+    }
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        Debug.Log($"Client {clientId} disconnected.");
+    }
+
+    /// <summary>
+    /// Gets the current board state from the game.
+    /// </summary>
+    public Board CurrentBoard {
 		get {
 			// Attempts to retrieve the current board from the board timeline.
 			game.BoardTimeline.TryGetCurrent(out Board currentBoard);
