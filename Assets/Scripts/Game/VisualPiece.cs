@@ -22,9 +22,9 @@ public class VisualPiece : MonoBehaviour {
 	
 	// Retrieves the current board square of the piece by converting its parent's name into a Square.
 	public Square CurrentSquare => StringToSquare(transform.parent.name);
-	
-	// The radius used to detect nearby board squares for collision detection.
-	private const float SquareCollisionRadius = 9f;
+
+    // The radius used to detect nearby board squares for collision detection.
+     private const float SquareCollisionRadius = 9f;
 	
 	// The camera used to view the board.
 	private Camera boardCamera;
@@ -32,8 +32,8 @@ public class VisualPiece : MonoBehaviour {
 	private Vector3 piecePositionSS;
 	// A reference to the piece's SphereCollider (if required for collision handling).
 	private SphereCollider pieceBoundingSphere;
-	// A list to hold potential board square GameObjects that the piece might land on.
-	private List<GameObject> potentialLandingSquares;
+    // A list to hold potential board square GameObjects that the piece might land on.
+    [SerializeField]  private List<GameObject> potentialLandingSquares;
 	// A cached reference to the transform of this piece.
 	private Transform thisTransform;
 
@@ -54,17 +54,25 @@ public class VisualPiece : MonoBehaviour {
 	/// Records the initial screen-space position of the piece.
 	/// </summary>
 	public void OnMouseDown() {
-		if (enabled) {
-			// Convert the world position of the piece to screen-space and store it.
-			piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
-		}
-	}
+        if (!IsLocalPlayerTurn())
+        {
+            Debug.Log("Not your turn!");
+            return;
+        }
+        piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
+    }
 
-	/// <summary>
-	/// Called while the user drags the piece with the mouse.
-	/// Updates the piece's world position to follow the mouse cursor.
-	/// </summary>
-	private void OnMouseDrag() {
+    private bool IsLocalPlayerTurn()
+    {
+        return (GameManager.Instance.isWhiteTurn.Value && GameManager.Instance.LocalClientId == GameManager.Instance.connectedPlayers[0]) ||
+               (!GameManager.Instance.isWhiteTurn.Value && GameManager.Instance.LocalClientId == GameManager.Instance.connectedPlayers[1]);
+    }
+
+    /// <summary>
+    /// Called while the user drags the piece with the mouse.
+    /// Updates the piece's world position to follow the mouse cursor.
+    /// </summary>
+    private void OnMouseDrag() {
 		if (enabled) {
 			// Create a new screen-space position based on the current mouse position,
 			// preserving the original depth (z-coordinate).

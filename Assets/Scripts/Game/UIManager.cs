@@ -280,7 +280,7 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	/// <summary>
 	/// Validates and updates the turn indicators based on the current side to move.
 	/// </summary>
-	private void ValidateIndicators() {
+	public void ValidateIndicators() {
 		Side sideToMove = GameManager.Instance.SideToMove;
 		// Enable the White turn indicator if it is White's turn.
 		whiteTurnIndicator.enabled = sideToMove == Side.White;
