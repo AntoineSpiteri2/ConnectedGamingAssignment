@@ -343,13 +343,6 @@ public class GameManager : NetworkBehaviour
             return;
         }
 
-        Debug.Log("is this a server ? " + IsServer);
-        // If this is not the server, send the move request to the server and return immediately.
-        if (!IsServer)
-        {
-            RequestMoveServerRpc(movedPieceInitialSquare.File, movedPieceInitialSquare.Rank, endSquare.File, endSquare.Rank);
-            return;
-        }
 
 
         // Attempt to retrieve a legal move from the game logic.
@@ -381,23 +374,21 @@ public class GameManager : NetworkBehaviour
             // For non-special moves, update the board visuals by destroying any piece at the destination.
             if (move is not SpecialMove) { BoardManager.Instance.TryDestroyVisualPiece(move.End); }
 
-            // For promotion moves, update the moved piece transform to the newly created visual piece.
-            //if (move is PromotionMove) {
-            //	movedPieceTransform = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
-            //}
+            //For promotion moves, update the moved piece transform to the newly created visual piece.
+            if (move is PromotionMove)
+            {
+                movedPieceTransform = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
+            }
 
-            // Move the piece safely using Netcode
-            //if (movedPieceNetworkObject.IsSpawned)
-            //{
-            //             movedPieceNetworkObject.TrySetParent((Transform)null);  // Detach from any parent to avoid invalid parenting
-            //         }
+
 
             // Re-parent the moved piece to the destination square and update its position.
             //movedPieceTransform.SetParent(null); // Ensure piece is NOT parented to a non-NetworkObject
-            Debug.Log(movedPieceTransform.parent.name);
             movedPieceTransform.SetParent(closestBoardSquareTransform);
             movedPieceTransform.position = closestBoardSquareTransform.position;
-            Debug.Log($"After move: piece now at square {closestBoardSquareTransform.name}");
+            EndTurn(); // Notify all clients that the turn has ended
+
+
 
 
 
@@ -415,18 +406,19 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    /////////  Server sided code	
+    /////////  Server sided code starts here /////////
 
 
 
     private bool gameStarted = false;
 
-    public NetworkVariable<bool> isWhiteTurn = new NetworkVariable<bool>(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public bool isWhiteTurn = true;
 
+    public ulong LocalClientId => NetworkManager.Singleton.LocalClientId;
 
 
     // Store connected player IDs
-    private List<ulong> connectedPlayers = new List<ulong>();
+    public List<ulong> connectedPlayers = new List<ulong>();
 
     public override void OnNetworkSpawn()
     {
@@ -444,6 +436,8 @@ public class GameManager : NetworkBehaviour
     {
         connectedPlayers.Add(clientId);
         Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
+        UpdateConnectedPlayersClientRpc(connectedPlayers.ToArray());
+        NotifyTurnChangeClientRpc(isWhiteTurn);
 
         // If at least two players are connected, start the game
         if (IsServer && connectedPlayers.Count >= 2)
@@ -454,6 +448,13 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private void UpdateConnectedPlayersClientRpc(ulong[] playerIds)
+    {
+        // Use the received array to update a local list on the client.
+        connectedPlayers = new List<ulong>(playerIds);
+        Debug.Log("Updated connected players on client.");
+    }
 
     private void OnClientDisconnected(ulong clientId)
     {
@@ -470,19 +471,17 @@ public class GameManager : NetworkBehaviour
 
     private void ResetGame()
     {
-        isWhiteTurn.Value = true;
+        isWhiteTurn = true;
         Debug.Log("Game has been reset.");
     }
 
     /// <summary>
     /// Ends the current turn and updates all clients.
     /// </summary>
-    [ServerRpc(RequireOwnership = false)]
-    public void EndTurnServerRpc()
+    public void EndTurn()
     {
-        if (!IsServer) return;  // Ensure only the server can update the turn
-        isWhiteTurn.Value = !isWhiteTurn.Value;
-        NotifyTurnChangeClientRpc(isWhiteTurn.Value);
+        isWhiteTurn = !isWhiteTurn;
+        NotifyTurnChangeClientRpc(isWhiteTurn);
     }
 
     /// <summary>
@@ -492,6 +491,7 @@ public class GameManager : NetworkBehaviour
     private void NotifyTurnChangeClientRpc(bool whiteTurn)
     {
         Debug.Log($"Turn changed: {(whiteTurn ? "White's Turn" : "Black's Turn")}");
+        isWhiteTurn  = whiteTurn;
     }
 
     /// <summary>
@@ -513,6 +513,7 @@ public class GameManager : NetworkBehaviour
         string resultMessage = isCheckmate ? (isWhiteWin ? "White Wins!" : "Black Wins!") : "Draw!";
         Debug.Log($"Game Over: {resultMessage}");
     }
+
 
 
     [ServerRpc(RequireOwnership = false)]
@@ -562,6 +563,15 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public int LocalPlayerIndex
+    {
+        get
+        {
+            return connectedPlayers.IndexOf(LocalClientId);
+        }
+    }
+
+
     [ServerRpc(RequireOwnership = false)]
     private void RequestMoveServerRpc(int startFile, int startRank, int endFile, int endRank, ServerRpcParams rpcParams = default)
     {
@@ -573,8 +583,8 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"Host received move request from Player {playerId}: {movedPieceInitialSquare} to {endSquare}");
 
         // Validate turn before executing the move
-        if ((isWhiteTurn.Value && playerId != connectedPlayers[0]) ||
-            (!isWhiteTurn.Value && playerId != connectedPlayers[1]))
+        if ((isWhiteTurn && playerId != connectedPlayers[0]) ||
+            (!isWhiteTurn && playerId != connectedPlayers[1]))
         {
             Debug.Log($"Player {playerId} tried to move out of turn!");
             return;
@@ -583,8 +593,18 @@ public class GameManager : NetworkBehaviour
         // Host executes the move
         if (TryMovePiece(movedPieceInitialSquare, endSquare))
         {
-            isWhiteTurn.Value = !isWhiteTurn.Value; // Swap turn
-            NotifyMoveClientRpc(startFile, startRank, endFile, endRank, isWhiteTurn.Value);
+            if (isWhiteTurn == true)
+            {
+                isWhiteTurn = false;
+
+            }
+            else
+            {
+                isWhiteTurn = true;
+            }
+
+                
+            NotifyMoveClientRpc(startFile, startRank, endFile, endRank, isWhiteTurn);
         }
     }
 
@@ -617,18 +637,25 @@ public class GameManager : NetworkBehaviour
 
 
     [ClientRpc]
-    private void NotifyMoveClientRpc(int startFile, int startRank, int endFile, int endRank)
+    private void NotifyMoveClientRpc(int startFile, int startRank, int endFile, int endRank, bool turn)
     {
         Square startSquare = new Square(startFile, startRank);
         Square endSquare = new Square(endFile, endRank);
 
         Debug.Log($"Client received move update: {startSquare} → {endSquare}");
 
-        BoardManager.Instance.GetPieceGOAtPosition(startSquare).transform.SetParent(BoardManager.Instance.GetSquareGOByPosition(endSquare).transform);
-        BoardManager.Instance.GetPieceGOAtPosition(startSquare).transform.position = BoardManager.Instance.GetSquareGOByPosition(endSquare).transform.position;
+        if (turn)
+        {
 
-        // Update turn indicators on UI
-        UIManager.Instance.ValidateIndicators();
+            BoardManager.Instance.GetPieceGOAtPosition(startSquare).transform.SetParent(BoardManager.Instance.GetSquareGOByPosition(endSquare).transform);
+            BoardManager.Instance.GetPieceGOAtPosition(startSquare).transform.position = BoardManager.Instance.GetSquareGOByPosition(endSquare).transform.position;
+
+            // Update turn indicators on UI
+            UIManager.Instance.ValidateIndicators();
+        } else
+        {
+            Debug.Log("Not your turn!");
+        }
     }
 
 

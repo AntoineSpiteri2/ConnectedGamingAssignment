@@ -9,7 +9,6 @@ public class NetworkUI : MonoBehaviour
     [SerializeField] private Button ClientButton;
     [SerializeField] private Button HostButton;
     [SerializeField] private GameObject Panel;
-
     private UnityTransport transport;
     private void Awake()
     {
@@ -66,6 +65,7 @@ public class NetworkUI : MonoBehaviour
             Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
             CheckIfRunningLocally();
             Destroy(Panel);
+
         }
         catch (Exception ex)
         {
