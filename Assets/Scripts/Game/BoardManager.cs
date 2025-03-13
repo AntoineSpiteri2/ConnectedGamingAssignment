@@ -159,7 +159,9 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         VisualPiece visualPiece = positionMap[position].GetComponentInChildren<VisualPiece>();
         // If a VisualPiece is found, destroy its GameObject immediately.
         if (visualPiece != null)
-            DestroyImmediate(visualPiece.gameObject);
+            //DestroyImmediate(visualPiece.gameObject);
+            visualPiece.gameObject.SetActive(false); // Disable the GameObject instead of destroying it cause will cause issues with network and lots errors : ( this wont lead to lots of gameobjects that are disabled since this is just a chess game not some other game
+
     }
 
     /// <summary>

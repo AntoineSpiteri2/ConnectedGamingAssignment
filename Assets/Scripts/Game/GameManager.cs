@@ -30,6 +30,7 @@ public class GameManager : NetworkBehaviour
     public static event Action NewGameStartedEvent;
     public static event Action GameEndedEvent;
     public static event Action GameResetToHalfMoveEvent;
+    
     public static event Action MoveExecutedEvent;
 
 
@@ -355,13 +356,30 @@ public class GameManager : NetworkBehaviour
 
 
 
+        // Ensure the piece has a NetworkObject before proceeding
+        // Even though our chess pieces do NOT have NetworkObjects, this check is crucial for movement synchronization.
+        // Here's why:
+        //
+        // Unity Netcode only syncs objects with a NetworkObject. 
+        //    - Our board is the only object with a NetworkObject, while pieces have NetworkTransform.
+        //    - Without this check, we might attempt to move a non-networked object, which could cause sync issues.
+        //
+        // If a client moves a piece, it MUST be validated by the server.
+        //    - This check prevents unauthorized movement attempts before validation.
+        //
+        // If the host moves a piece, it doesn't call a ServerRpc.
+        //    - Instead, movement updates are **automatically synchronized** because the board (which owns all pieces) is a NetworkObject.
+        //TLDR:
+        // - Host moves sync automatically since it is both the server and client.
+        // - Clients must request moves from the server, making this check **crucial** for ensuring proper validation.
+        // - Prevents desync issues by ensuring only valid networked objects are moved.
         NetworkObject movedPieceNetworkObject = movedPieceTransform.GetComponent<NetworkObject>();
 
         if (movedPieceNetworkObject == null)
         {
-            Debug.LogError("Piece does not have a NetworkObject component!");
             return;
         }
+
 
 
 
@@ -434,6 +452,7 @@ public class GameManager : NetworkBehaviour
     /////////  Server sided code starts here /////////
 
 
+    private List<SerializableSquare> destroyedPieces = new List<SerializableSquare>();
 
     private bool gameStarted = false;
 
@@ -463,6 +482,11 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
         UpdateConnectedPlayersClientRpc(connectedPlayers.ToArray());
         NotifyTurnChangeClientRpc(isWhiteTurn);
+        //Send current destroyed pieces to the reconnecting client
+        SyncDestroyedPiecesClientRpc(clientId, destroyedPieces.ToArray());
+
+        // Send current board state to ensure everything is synced
+        SyncBoardStateClientRpc(clientId);
 
         // If at least two players are connected, start the game
         if (IsServer && connectedPlayers.Count >= 2)
@@ -486,6 +510,7 @@ public class GameManager : NetworkBehaviour
         Debug.Log($"Player {clientId} disconnected. Remaining Players: {connectedPlayers.Count}");
 
 
+
         // Check if the host (server) disconnected
         if (clientId == NetworkManager.ServerClientId)
         {
@@ -501,6 +526,35 @@ public class GameManager : NetworkBehaviour
             ResetGame();
         }
     }
+
+    [ClientRpc]
+    private void SyncDestroyedPiecesClientRpc(ulong clientId, SerializableSquare[] destroyedPiecesArray)
+    {
+        Debug.Log($"[CLIENT] Syncing destroyed pieces for reconnecting player {clientId}");
+
+        foreach (SerializableSquare wrapper in destroyedPiecesArray)
+        {
+            //Square square = wrapper.ToSquare();
+            BoardManager.Instance.TryDestroyVisualPiece(wrapper.ToSquare());
+        }
+    }
+
+    [ClientRpc]
+    private void SyncBoardStateClientRpc(ulong clientId)
+    {
+        Debug.Log($"[CLIENT] Syncing full board state for player {clientId}");
+
+        foreach ((Square position, Piece piece) in GameManager.Instance.CurrentPieces)
+        {
+            GameObject pieceGO = BoardManager.Instance.GetPieceGOAtPosition(position);
+            if (pieceGO == null)
+            {
+                // Ensure missing pieces are re-created for the reconnecting client
+                BoardManager.Instance.CreateAndPlacePieceGO(piece, position);
+            }
+        }
+    }
+
 
     private void ResetGame()
     {
@@ -593,8 +647,17 @@ public class GameManager : NetworkBehaviour
         if ((move is not SpecialMove specialMove || TryHandleSpecialMoveBehaviourAsync(specialMove).Result)
             && TryExecuteMove(move))
         {
-            // Destroy any piece at the destination on the server-side board
-            BoardManager.Instance.TryDestroyVisualPiece(move.End);
+            if (BoardManager.Instance.GetPieceGOAtPosition(move.End) != null)
+            {
+                BoardManager.Instance.TryDestroyVisualPiece(move.End);
+                Debug.Log($"[SERVER] Piece at {move.End} destroyed.");
+                SerializableSquare serializableSquare = SerializableSquare.FromSquare(move.End);
+
+                destroyedPieces.Add(serializableSquare);
+            }
+
+            DestroyPieceClientRpc(endSquare);
+
 
             // Notify clients with the updated visual information
             MovePieceClientRpc(startSquare, endSquare);
@@ -640,6 +703,23 @@ public class GameManager : NetworkBehaviour
             Debug.LogWarning($"[CLIENT] No piece found at {startSquare} for move.");
         }
     }
+
+    [ClientRpc]
+    private void DestroyPieceClientRpc(string squarePosition)
+    {
+        Square endSquare = new Square(squarePosition);
+
+        if (BoardManager.Instance.GetPieceGOAtPosition(endSquare) != null)
+        {
+            BoardManager.Instance.TryDestroyVisualPiece(endSquare);
+            Debug.Log($"[CLIENT] Piece at {squarePosition} destroyed.");
+            SerializableSquare serializableSquare = SerializableSquare.FromSquare(endSquare);
+
+            destroyedPieces.Add(serializableSquare);
+
+        }
+    }
+
 
 
 

@@ -176,8 +176,8 @@ public class VisualPiece : MonoBehaviour {
             {
                 netTransform.enabled = false;
             }
-
-           GameManager.Instance.RequestMoveServerRpc(GameManager.Instance.LocalClientId, CurrentSquare.ToString(), closestSquareTransform.name);
+            // this is way more accurate  than putting this in  movepiecemethod cause lets say you move pawn to a3 but in client it shows a6   so it will be a bug this fixes that
+            GameManager.Instance.RequestMoveServerRpc(GameManager.Instance.LocalClientId, CurrentSquare.ToString(), closestSquareTransform.name);
 
         }
     }

@@ -96,7 +96,7 @@ GameObject:
   - component: {fileID: 4822782893517057321}
   - component: {fileID: 8412671588114259348}
   - component: {fileID: 6898200883131147215}
-  - component: {fileID: 8409029312955957469}
+  - component: {fileID: 5360486207728705655}
   m_Layer: 0
   m_Name: Black Bishop(Clone)
   m_TagString: Untagged
@@ -176,12 +176,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 79115762478850184}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &6898200883131147215
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -203,7 +204,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.3947477
   m_Center: {x: 0, y: 1.3975194, z: 0.000000029802322}
---- !u!114 &8409029312955957469
+--- !u!114 &5360486207728705655
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -212,17 +213,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 79115762478850184}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &86564194083501288
 GameObject:
   m_ObjectHideFlags: 0
@@ -236,7 +247,7 @@ GameObject:
   - component: {fileID: 4065060092982439554}
   - component: {fileID: 838478822088468752}
   - component: {fileID: 5235824097455570143}
-  - component: {fileID: 1489729213805505787}
+  - component: {fileID: 5170601242914553928}
   m_Layer: 0
   m_Name: White Rook(Clone)
   m_TagString: Untagged
@@ -316,12 +327,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 86564194083501288}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &5235824097455570143
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -343,7 +355,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.9069151
   m_Center: {x: 0, y: 0.9098466, z: 0.00000011920929}
---- !u!114 &1489729213805505787
+--- !u!114 &5170601242914553928
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -352,17 +364,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 86564194083501288}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &279466197528005768
 GameObject:
   m_ObjectHideFlags: 0
@@ -543,7 +565,7 @@ GameObject:
   - component: {fileID: 1467832148642539047}
   - component: {fileID: 6836606586387115004}
   - component: {fileID: 7959584845977736706}
-  - component: {fileID: 3810005774189309259}
+  - component: {fileID: 1773154470971162104}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -623,12 +645,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 549903212878362439}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &7959584845977736706
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -650,7 +673,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &3810005774189309259
+--- !u!114 &1773154470971162104
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -659,17 +682,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 549903212878362439}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &748000383919280529
 GameObject:
   m_ObjectHideFlags: 0
@@ -683,7 +716,7 @@ GameObject:
   - component: {fileID: 71882099110740756}
   - component: {fileID: 8927216508409360880}
   - component: {fileID: 4328603967208245329}
-  - component: {fileID: 700376025214416708}
+  - component: {fileID: 867150531543197179}
   m_Layer: 0
   m_Name: Black Queen(Clone)
   m_TagString: Untagged
@@ -763,12 +796,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 748000383919280529}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &4328603967208245329
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -790,7 +824,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.311838
   m_Center: {x: 0, y: 1.316373, z: 0}
---- !u!114 &700376025214416708
+--- !u!114 &867150531543197179
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -799,17 +833,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 748000383919280529}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &799711709787093606
 GameObject:
   m_ObjectHideFlags: 0
@@ -823,7 +867,7 @@ GameObject:
   - component: {fileID: 9159134874181518916}
   - component: {fileID: 292947434283750997}
   - component: {fileID: 3333618967621093526}
-  - component: {fileID: 1319277545964566495}
+  - component: {fileID: 6023122706635998634}
   m_Layer: 0
   m_Name: Black Rook(Clone)
   m_TagString: Untagged
@@ -903,12 +947,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 799711709787093606}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &3333618967621093526
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -930,7 +975,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.9069151
   m_Center: {x: 0, y: 0.9098466, z: 0.00000011920929}
---- !u!114 &1319277545964566495
+--- !u!114 &6023122706635998634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -939,17 +984,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 799711709787093606}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &857221310247778557
 GameObject:
   m_ObjectHideFlags: 0
@@ -1129,7 +1184,7 @@ GameObject:
   - component: {fileID: 7151398647132332974}
   - component: {fileID: 8189279955179282216}
   - component: {fileID: 824881678513764761}
-  - component: {fileID: 9140847233022863150}
+  - component: {fileID: 961306779052292634}
   m_Layer: 0
   m_Name: Black King(Clone)
   m_TagString: Untagged
@@ -1209,12 +1264,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1139079488291004974}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &824881678513764761
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1236,7 +1292,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.5688607
   m_Center: {x: 0.000000029802322, y: 1.5716318, z: -0.000000029802322}
---- !u!114 &9140847233022863150
+--- !u!114 &961306779052292634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1245,17 +1301,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 1139079488291004974}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &1226872632785184144
 GameObject:
   m_ObjectHideFlags: 0
@@ -1688,7 +1754,7 @@ GameObject:
   - component: {fileID: 9085584522080023921}
   - component: {fileID: 823952640746075988}
   - component: {fileID: 4326894858970709539}
-  - component: {fileID: 6244920689581204251}
+  - component: {fileID: 2714395815805119785}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -1768,12 +1834,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2185518898610782718}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &4326894858970709539
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1795,7 +1862,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &6244920689581204251
+--- !u!114 &2714395815805119785
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1804,17 +1871,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 2185518898610782718}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &2730311720700658144
 GameObject:
   m_ObjectHideFlags: 0
@@ -1828,7 +1905,7 @@ GameObject:
   - component: {fileID: 2973977852391860758}
   - component: {fileID: 5171884573753302712}
   - component: {fileID: 3187388078086365172}
-  - component: {fileID: 7370557542627122049}
+  - component: {fileID: 2213516792972108636}
   m_Layer: 0
   m_Name: Black Rook(Clone)
   m_TagString: Untagged
@@ -1908,12 +1985,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2730311720700658144}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &3187388078086365172
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -1935,7 +2013,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.9069151
   m_Center: {x: 0, y: 0.9098466, z: 0.00000011920929}
---- !u!114 &7370557542627122049
+--- !u!114 &2213516792972108636
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1944,17 +2022,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 2730311720700658144}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &2883675693374692315
 GameObject:
   m_ObjectHideFlags: 0
@@ -2051,7 +2139,7 @@ GameObject:
   - component: {fileID: 6345920854024422865}
   - component: {fileID: 522555912622770699}
   - component: {fileID: 2064264916049803085}
-  - component: {fileID: 4195701850746547280}
+  - component: {fileID: 2816397421253553199}
   m_Layer: 0
   m_Name: Black Knight(Clone)
   m_TagString: Untagged
@@ -2131,12 +2219,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2919652582724716387}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &2064264916049803085
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2158,7 +2247,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.2373221
   m_Center: {x: 0, y: 1.2402534, z: 0.00000011920932}
---- !u!114 &4195701850746547280
+--- !u!114 &2816397421253553199
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2167,17 +2256,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 2919652582724716387}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3003650974479998046
 GameObject:
   m_ObjectHideFlags: 0
@@ -2274,7 +2373,7 @@ GameObject:
   - component: {fileID: 3937231157083034051}
   - component: {fileID: 7203992542622735847}
   - component: {fileID: 1376239550432325913}
-  - component: {fileID: 6173916648773913635}
+  - component: {fileID: 9053203025804270576}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -2354,12 +2453,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3103118936605656268}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &1376239550432325913
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2381,7 +2481,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &6173916648773913635
+--- !u!114 &9053203025804270576
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2390,17 +2490,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3103118936605656268}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3149922824778430612
 GameObject:
   m_ObjectHideFlags: 0
@@ -2498,7 +2608,7 @@ GameObject:
   - component: {fileID: 158423859673200001}
   - component: {fileID: 818179161423633208}
   - component: {fileID: 2585260861089448664}
-  - component: {fileID: 8957678499148500142}
+  - component: {fileID: 3896178643327649136}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -2584,6 +2694,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &2585260861089448664
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2605,7 +2716,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &8957678499148500142
+--- !u!114 &3896178643327649136
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2614,17 +2725,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3246015499193948009}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3444893490369318705
 GameObject:
   m_ObjectHideFlags: 0
@@ -2638,7 +2759,7 @@ GameObject:
   - component: {fileID: 7795120591851702865}
   - component: {fileID: 8992533415195429626}
   - component: {fileID: 5627602785110254340}
-  - component: {fileID: 964681154399462491}
+  - component: {fileID: 1158217855093553175}
   m_Layer: 0
   m_Name: White King(Clone)
   m_TagString: Untagged
@@ -2718,12 +2839,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3444893490369318705}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &5627602785110254340
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2745,7 +2867,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.5688607
   m_Center: {x: 0.000000029802322, y: 1.5716318, z: -0.000000029802322}
---- !u!114 &964681154399462491
+--- !u!114 &1158217855093553175
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2754,17 +2876,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3444893490369318705}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3538520696136207926
 GameObject:
   m_ObjectHideFlags: 0
@@ -2862,7 +2994,7 @@ GameObject:
   - component: {fileID: 3321910165900952503}
   - component: {fileID: 3246686322296585759}
   - component: {fileID: 8434140202746852144}
-  - component: {fileID: 4343419863218592376}
+  - component: {fileID: 473854397712969709}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -2948,6 +3080,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &8434140202746852144
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -2969,7 +3102,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &4343419863218592376
+--- !u!114 &473854397712969709
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2978,17 +3111,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3570748025216662890}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3733968659618686684
 GameObject:
   m_ObjectHideFlags: 0
@@ -3169,7 +3312,7 @@ GameObject:
   - component: {fileID: 2611393746912807058}
   - component: {fileID: 6526849271829554404}
   - component: {fileID: 8256655685631498202}
-  - component: {fileID: 501895901588843960}
+  - component: {fileID: 8836565835416886156}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -3249,12 +3392,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3854746913965806289}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &8256655685631498202
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3276,7 +3420,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &501895901588843960
+--- !u!114 &8836565835416886156
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3285,17 +3429,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3854746913965806289}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &3876432623837609179
 GameObject:
   m_ObjectHideFlags: 0
@@ -3309,7 +3463,7 @@ GameObject:
   - component: {fileID: 7604441183404970119}
   - component: {fileID: 3721347448705933130}
   - component: {fileID: 6236692998600195399}
-  - component: {fileID: 7170917334528687095}
+  - component: {fileID: 8722654174571377680}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -3395,6 +3549,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &6236692998600195399
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3416,7 +3571,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &7170917334528687095
+--- !u!114 &8722654174571377680
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3425,17 +3580,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 3876432623837609179}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &4091051406581996587
 GameObject:
   m_ObjectHideFlags: 0
@@ -3865,7 +4030,7 @@ GameObject:
   - component: {fileID: 6859938412377533617}
   - component: {fileID: 4612311055183410948}
   - component: {fileID: 2547795200621818848}
-  - component: {fileID: 6596576812900176715}
+  - component: {fileID: 7569820718802005312}
   m_Layer: 0
   m_Name: White Bishop(Clone)
   m_TagString: Untagged
@@ -3945,12 +4110,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4310296472549205319}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &2547795200621818848
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3972,7 +4138,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.3947477
   m_Center: {x: 0, y: 1.3975194, z: 0.000000029802322}
---- !u!114 &6596576812900176715
+--- !u!114 &7569820718802005312
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3981,17 +4147,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 4310296472549205319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &4342317139256739383
 GameObject:
   m_ObjectHideFlags: 0
@@ -4005,7 +4181,7 @@ GameObject:
   - component: {fileID: 5685081662653144422}
   - component: {fileID: 4568716485965994071}
   - component: {fileID: 8504604901326572993}
-  - component: {fileID: 880330020899475712}
+  - component: {fileID: 4107484801663950805}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -4091,6 +4267,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &8504604901326572993
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4112,7 +4289,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &880330020899475712
+--- !u!114 &4107484801663950805
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4121,17 +4298,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 4342317139256739383}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &4450865543209347395
 GameObject:
   m_ObjectHideFlags: 0
@@ -4145,7 +4332,7 @@ GameObject:
   - component: {fileID: 7632067235165585559}
   - component: {fileID: 5766115980723136351}
   - component: {fileID: 2272503621100394602}
-  - component: {fileID: 4462441669834464930}
+  - component: {fileID: 5314516201941452726}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -4231,6 +4418,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &2272503621100394602
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4252,7 +4440,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &4462441669834464930
+--- !u!114 &5314516201941452726
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4261,17 +4449,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 4450865543209347395}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &4535001286907741529
 GameObject:
   m_ObjectHideFlags: 0
@@ -4704,7 +4902,7 @@ GameObject:
   - component: {fileID: 4821971746246061328}
   - component: {fileID: 5863684156825312722}
   - component: {fileID: 300870995201464445}
-  - component: {fileID: 6890393655894867796}
+  - component: {fileID: 2623884022363103028}
   m_Layer: 0
   m_Name: Black Bishop(Clone)
   m_TagString: Untagged
@@ -4784,12 +4982,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5336050096015969803}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &300870995201464445
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -4811,7 +5010,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.3947477
   m_Center: {x: 0, y: 1.3975194, z: 0.000000029802322}
---- !u!114 &6890393655894867796
+--- !u!114 &2623884022363103028
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4820,17 +5019,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 5336050096015969803}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &5412119781921830904
 GameObject:
   m_ObjectHideFlags: 0
@@ -5011,7 +5220,7 @@ GameObject:
   - component: {fileID: 2326877325515620549}
   - component: {fileID: 8469802356552704373}
   - component: {fileID: 1557042838988427445}
-  - component: {fileID: 5616059039932112033}
+  - component: {fileID: 6893112607128656683}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -5097,6 +5306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &1557042838988427445
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -5118,7 +5328,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &5616059039932112033
+--- !u!114 &6893112607128656683
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5127,17 +5337,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 5613498092840068620}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &5618581463829372512
 GameObject:
   m_ObjectHideFlags: 0
@@ -5402,7 +5622,7 @@ GameObject:
   - component: {fileID: 2066939794268585502}
   - component: {fileID: 928678401123495940}
   - component: {fileID: 3247733966138275969}
-  - component: {fileID: 5513147833133707567}
+  - component: {fileID: 495618113348374715}
   m_Layer: 0
   m_Name: White Rook(Clone)
   m_TagString: Untagged
@@ -5482,12 +5702,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5796425231755980667}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &3247733966138275969
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -5509,7 +5730,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.9069151
   m_Center: {x: 0, y: 0.9098466, z: 0.00000011920929}
---- !u!114 &5513147833133707567
+--- !u!114 &495618113348374715
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5518,17 +5739,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 5796425231755980667}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &5811841917758214646
 GameObject:
   m_ObjectHideFlags: 0
@@ -5542,7 +5773,7 @@ GameObject:
   - component: {fileID: 186199071350871689}
   - component: {fileID: 5120548985910388829}
   - component: {fileID: 290325170405779877}
-  - component: {fileID: 4171304025683874106}
+  - component: {fileID: 8681388466589502873}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -5628,6 +5859,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &290325170405779877
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -5649,7 +5881,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &4171304025683874106
+--- !u!114 &8681388466589502873
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5658,17 +5890,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 5811841917758214646}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &5859158488995641141
 GameObject:
   m_ObjectHideFlags: 0
@@ -5850,7 +6092,7 @@ GameObject:
   - component: {fileID: 6463116634787214276}
   - component: {fileID: 4055671740172388751}
   - component: {fileID: 6453995066081702380}
-  - component: {fileID: 8962060785305466622}
+  - component: {fileID: 3302626304961174673}
   m_Layer: 0
   m_Name: White Pawn(Clone)
   m_TagString: Untagged
@@ -5936,6 +6178,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &6453995066081702380
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -5957,7 +6200,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &8962060785305466622
+--- !u!114 &3302626304961174673
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5966,17 +6209,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 5925268810199981769}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &6449673059448589322
 GameObject:
   m_ObjectHideFlags: 0
@@ -5990,7 +6243,7 @@ GameObject:
   - component: {fileID: 4112841606673174241}
   - component: {fileID: 6686382029180892669}
   - component: {fileID: 1652562588774552576}
-  - component: {fileID: 7176492324527386815}
+  - component: {fileID: 6329328434108121850}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -6070,12 +6323,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6449673059448589322}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &1652562588774552576
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6097,7 +6351,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &7176492324527386815
+--- !u!114 &6329328434108121850
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6106,17 +6360,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 6449673059448589322}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &6608624797599398197
 GameObject:
   m_ObjectHideFlags: 0
@@ -6130,7 +6394,7 @@ GameObject:
   - component: {fileID: 5312621870495916605}
   - component: {fileID: 8034210394169431038}
   - component: {fileID: 9072117988721377780}
-  - component: {fileID: 6472514938507849848}
+  - component: {fileID: 2963411589418679407}
   m_Layer: 0
   m_Name: White Knight(Clone)
   m_TagString: Untagged
@@ -6216,6 +6480,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &9072117988721377780
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6237,7 +6502,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.2373221
   m_Center: {x: 0, y: 1.2402534, z: 0.00000011920932}
---- !u!114 &6472514938507849848
+--- !u!114 &2963411589418679407
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6246,17 +6511,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 6608624797599398197}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &6608802619985822213
 GameObject:
   m_ObjectHideFlags: 0
@@ -6521,7 +6796,7 @@ GameObject:
   - component: {fileID: 8602915644665927230}
   - component: {fileID: 5058124824009555192}
   - component: {fileID: 3857249846490273533}
-  - component: {fileID: 7863482596008986045}
+  - component: {fileID: 5449081991110312392}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -6601,12 +6876,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6880113755930986717}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &3857249846490273533
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6628,7 +6904,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &7863482596008986045
+--- !u!114 &5449081991110312392
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6637,17 +6913,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 6880113755930986717}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &6920988234934851059
 GameObject:
   m_ObjectHideFlags: 0
@@ -6661,7 +6947,7 @@ GameObject:
   - component: {fileID: 9159396651276258500}
   - component: {fileID: 4829102698748841406}
   - component: {fileID: 5097962335229794687}
-  - component: {fileID: 3590425839213815434}
+  - component: {fileID: 4110414222017837}
   m_Layer: 0
   m_Name: White Bishop(Clone)
   m_TagString: Untagged
@@ -6741,12 +7027,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6920988234934851059}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &5097962335229794687
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -6768,7 +7055,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.3947477
   m_Center: {x: 0, y: 1.3975194, z: 0.000000029802322}
---- !u!114 &3590425839213815434
+--- !u!114 &4110414222017837
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6777,17 +7064,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 6920988234934851059}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &6926142607625538365
 GameObject:
   m_ObjectHideFlags: 0
@@ -7052,7 +7349,7 @@ GameObject:
   - component: {fileID: 5760506970532551353}
   - component: {fileID: 3960132421560978969}
   - component: {fileID: 4200439319197897098}
-  - component: {fileID: 5765492223496454603}
+  - component: {fileID: 4972565597148669202}
   m_Layer: 0
   m_Name: Black Knight(Clone)
   m_TagString: Untagged
@@ -7132,12 +7429,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7360354607425052783}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &4200439319197897098
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -7159,7 +7457,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.2373221
   m_Center: {x: 0, y: 1.2402534, z: 0.00000011920932}
---- !u!114 &5765492223496454603
+--- !u!114 &4972565597148669202
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7168,17 +7466,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 7360354607425052783}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &7423538941876835488
 GameObject:
   m_ObjectHideFlags: 0
@@ -7360,7 +7668,7 @@ GameObject:
   - component: {fileID: 6601215742692175333}
   - component: {fileID: 7068515907607204274}
   - component: {fileID: 3847265419190140807}
-  - component: {fileID: 3429073323708991288}
+  - component: {fileID: 8628906949448439040}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -7440,12 +7748,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7565023257171334850}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &3847265419190140807
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -7467,7 +7776,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &3429073323708991288
+--- !u!114 &8628906949448439040
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7476,17 +7785,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 7565023257171334850}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &7578152192706326316
 GameObject:
   m_ObjectHideFlags: 0
@@ -8666,7 +8985,7 @@ GameObject:
   - component: {fileID: 5537541384341690456}
   - component: {fileID: 2574719995556165828}
   - component: {fileID: 4827050583835830690}
-  - component: {fileID: 4926950620590869566}
+  - component: {fileID: 1649388792080517323}
   m_Layer: 0
   m_Name: White Knight(Clone)
   m_TagString: Untagged
@@ -8752,6 +9071,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &4827050583835830690
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -8773,7 +9093,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.2373221
   m_Center: {x: 0, y: 1.2402534, z: 0.00000011920932}
---- !u!114 &4926950620590869566
+--- !u!114 &1649388792080517323
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8782,17 +9102,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 8604961254227972785}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &8756434977856136806
 GameObject:
   m_ObjectHideFlags: 0
@@ -9139,7 +9469,7 @@ Transform:
   - {fileID: 84408293447028604}
   - {fileID: 7935668730974549800}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7568419533107941918
 MeshFilter:
@@ -9323,7 +9653,7 @@ GameObject:
   - component: {fileID: 316550252651200882}
   - component: {fileID: 2739577933226207564}
   - component: {fileID: 312004994069929855}
-  - component: {fileID: 2441008235879987425}
+  - component: {fileID: 8438925545184496189}
   m_Layer: 0
   m_Name: White Queen(Clone)
   m_TagString: Untagged
@@ -9403,12 +9733,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9080104359736335530}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 2
+  potentialLandingSquares: []
 --- !u!135 &312004994069929855
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -9430,7 +9761,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.311838
   m_Center: {x: 0, y: 1.316373, z: 0}
---- !u!114 &2441008235879987425
+--- !u!114 &8438925545184496189
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -9439,17 +9770,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 9080104359736335530}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &9112091236334671037
 GameObject:
   m_ObjectHideFlags: 0
@@ -9547,7 +9888,7 @@ GameObject:
   - component: {fileID: 403684121165805564}
   - component: {fileID: 872868125915422114}
   - component: {fileID: 6658029418896093604}
-  - component: {fileID: 6201484229204552333}
+  - component: {fileID: 2551137295130644333}
   m_Layer: 0
   m_Name: Black Pawn(Clone)
   m_TagString: Untagged
@@ -9627,12 +9968,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9127227010959158649}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b6380fa2984e0114fa9ccce22f8e273b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   PieceColor: 1
+  potentialLandingSquares: []
 --- !u!135 &6658029418896093604
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -9654,7 +9996,7 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1.0590492
   m_Center: {x: 0, y: 1.0590492, z: 0.00000014901161}
---- !u!114 &6201484229204552333
+--- !u!114 &2551137295130644333
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -9663,17 +10005,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 9127227010959158649}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 951099334
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
+  SyncPositionX: 1
+  SyncPositionY: 0
+  SyncPositionZ: 1
+  SyncRotAngleX: 0
+  SyncRotAngleY: 0
+  SyncRotAngleZ: 0
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  Interpolate: 1
+  SlerpPosition: 0
 --- !u!1 &9135976254523434455
 GameObject:
   m_ObjectHideFlags: 0
