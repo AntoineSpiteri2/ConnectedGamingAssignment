@@ -277,19 +277,27 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		}
 	}
 
-	/// <summary>
-	/// Validates and updates the turn indicators based on the current side to move.
-	/// </summary>
-	public void ValidateIndicators() {
-		Side sideToMove = GameManager.Instance.SideToMove;
-		// Enable the White turn indicator if it is White's turn.
-		whiteTurnIndicator.enabled = sideToMove == Side.White;
-		// Enable the Black turn indicator if it is Black's turn.
-		blackTurnIndicator.enabled = sideToMove == Side.Black;
-	}
+    /// <summary>
+    /// Validates and updates the turn indicators based on the current side to move.
+    /// </summary>
+    public void ValidateIndicators()
+    {
+		if (GameManager.Instance == null)
+		{
+            return;
+		}
 
-	/// <summary>
-	/// Updates the game string input field with the current serialized game state.
-	/// </summary>
-	private void UpdateGameStringInputField() => GameStringInputField.text = GameManager.Instance.SerializeGame();
+			Side sideToMove = GameManager.Instance.SideToMove;
+
+        // Ensure the correct turn indicator is enabled
+        whiteTurnIndicator.enabled = (sideToMove == Side.White);
+        blackTurnIndicator.enabled = (sideToMove == Side.Black);
+
+    }
+
+
+    /// <summary>
+    /// Updates the game string input field with the current serialized game state.
+    /// </summary>
+    private void UpdateGameStringInputField() => GameStringInputField.text = GameManager.Instance.SerializeGame();
 }

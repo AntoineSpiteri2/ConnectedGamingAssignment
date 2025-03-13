@@ -64,10 +64,20 @@ public class VisualPiece : MonoBehaviour {
             Debug.Log("Not your turn!");
             return;
         }
-        if (networkTransform != null)
+
+        if (PieceColor != GameManager.Instance.SideToMove)
         {
-            networkTransform.enabled = false;
+            Debug.Log("Not your piece!");
+            return;
         }
+
+        // Disable Network Transform while dragging to prevent conflicts
+        NetworkTransform netTransform = GetComponent<NetworkTransform>();
+        if (netTransform != null)
+        {
+            netTransform.enabled = false;
+        }
+
         piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
     }
 
@@ -75,12 +85,21 @@ public class VisualPiece : MonoBehaviour {
     private bool IsLocalPlayerTurn()
     {
         ulong localId = GameManager.Instance.LocalClientId;
-        if (GameManager.Instance.connectedPlayers.Count < 2) return false;
-        if (GameManager.Instance.isWhiteTurn)
-            return localId == GameManager.Instance.connectedPlayers[0];
-        else
-            return localId == GameManager.Instance.connectedPlayers[1];
+        Side currentTurn = GameManager.Instance.SideToMove; // Get side to move from GameManager
+
+        if (GameManager.Instance.connectedPlayers.Count < 2)
+        {
+            Debug.LogWarning("[CLIENT] Not enough players connected to determine turn.");
+            return false;
+        }
+
+        bool isLocalTurn = (currentTurn == Side.White && localId == GameManager.Instance.connectedPlayers[0]) ||
+                           (currentTurn == Side.Black && localId == GameManager.Instance.connectedPlayers[1]);
+
+
+        return isLocalTurn;
     }
+
 
 
     /// <summary>
@@ -90,48 +109,78 @@ public class VisualPiece : MonoBehaviour {
     private void OnMouseDrag()
     {
         if (!IsLocalPlayerTurn()) return;
+        if (PieceColor != GameManager.Instance.SideToMove)
+        {
+            Debug.Log("Not your piece!");
+            return;
+        }
         Vector3 nextPiecePositionSS = new Vector3(Input.mousePosition.x, Input.mousePosition.y, piecePositionSS.z);
         Vector3 newWorldPos = boardCamera.ScreenToWorldPoint(nextPiecePositionSS);
         transform.position = newWorldPos;
+        networkTransform.transform.position = newWorldPos;
+
     }
 
     /// <summary>
     /// Called when the user releases the mouse button after dragging the piece.
     /// Determines the closest board square to the piece and raises an event with the move.
     /// </summary>
-    public void OnMouseUp() {
-		if (enabled) {
-			// Clear any previous potential landing square candidates.
-			potentialLandingSquares.Clear();
-			// Obtain all square GameObjects within the collision radius of the piece's current position.
-			BoardManager.Instance.GetSquareGOsWithinRadius(potentialLandingSquares, transform.position, SquareCollisionRadius);
+    public void OnMouseUp()
+    {
+        if (PieceColor != GameManager.Instance.SideToMove)
+        {
+            Debug.Log("Not your piece!");
+            return;
+        }
 
-			// If no squares are found, assume the piece was moved off the board and reset its position.
-			if (potentialLandingSquares.Count == 0) { // piece moved off board
+        if (!IsLocalPlayerTurn())
+        {
+            Debug.Log("[CLIENT] Move Rejected - Not Your Turn!");
+            transform.position = transform.parent.position; // Reset piece position
+            return;
+        }
+        if (enabled)
+        {
+            potentialLandingSquares.Clear();
+            BoardManager.Instance.GetSquareGOsWithinRadius(potentialLandingSquares, transform.position, SquareCollisionRadius);
+
+            if (potentialLandingSquares.Count == 0)
+            {
+                Debug.Log("[CLIENT] Move Rejected - No Valid Squares Found!");
+
                 transform.position = transform.parent.position;
-				return;
-			}
-	
-			// Determine the closest square from the list of potential landing squares.
-			Transform closestSquareTransform = potentialLandingSquares[0].transform;
-			// Calculate the square of the distance between the piece and the first candidate square.
-			float shortestDistanceFromPieceSquared = (closestSquareTransform.position - transform.position).sqrMagnitude;
-			
-			// Iterate through remaining potential squares to find the closest one.
-			for (int i = 1; i < potentialLandingSquares.Count; i++) {
-				GameObject potentialLandingSquare = potentialLandingSquares[i];
-				// Calculate the squared distance from the piece to the candidate square.
-				float distanceFromPieceSquared = (potentialLandingSquare.transform.position - transform.position).sqrMagnitude;
+                return;
+            }
 
-				// If the current candidate is closer than the previous closest, update the closest square.
-				if (distanceFromPieceSquared < shortestDistanceFromPieceSquared) {
-					shortestDistanceFromPieceSquared = distanceFromPieceSquared;
-					closestSquareTransform = potentialLandingSquare.transform;
-				}
-			}
+            Transform closestSquareTransform = potentialLandingSquares[0].transform;
+            float shortestDistanceFromPieceSquared = (closestSquareTransform.position - transform.position).sqrMagnitude;
 
-			// Raise the VisualPieceMoved event with the initial square, the piece's transform, and the closest square transform.
-			VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
-		}
-	}
+            for (int i = 1; i < potentialLandingSquares.Count; i++)
+            {
+                GameObject potentialLandingSquare = potentialLandingSquares[i];
+                float distanceFromPieceSquared = (potentialLandingSquare.transform.position - transform.position).sqrMagnitude;
+
+                if (distanceFromPieceSquared < shortestDistanceFromPieceSquared)
+                {
+                    shortestDistanceFromPieceSquared = distanceFromPieceSquared;
+                    closestSquareTransform = potentialLandingSquare.transform;
+                }
+            }
+            Debug.Log($"[CLIENT] Attempting Move from {CurrentSquare} to {closestSquareTransform.name}");
+
+            VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+
+            // Re-enable Network Transform after move is finished
+            NetworkTransform netTransform = GetComponent<NetworkTransform>();
+            if (netTransform != null)
+            {
+                netTransform.enabled = false;
+            }
+
+           GameManager.Instance.RequestMoveServerRpc(GameManager.Instance.LocalClientId, CurrentSquare.ToString(), closestSquareTransform.name);
+
+        }
+    }
+
+
 }

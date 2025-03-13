@@ -6,6 +6,7 @@ using UnityChess;
 using UnityEngine;
 using Unity.Netcode;
 using Unity.Collections;
+using Unity.Netcode.Components;
 
 
 /// <summary>
@@ -56,6 +57,22 @@ public class GameManager : NetworkBehaviour
             // Retrieves the current game conditions and returns the active side.
             game.ConditionsTimeline.TryGetCurrent(out GameConditions currentConditions);
             return currentConditions.SideToMove;
+        }
+        set
+        {
+            // Sets the side to move in the current game conditions.
+            game.ConditionsTimeline.TryGetCurrent(out GameConditions currentConditions);
+            currentConditions = new GameConditions(
+                value,
+                currentConditions.WhiteCanCastleKingside,
+                currentConditions.WhiteCanCastleQueenside,
+                currentConditions.BlackCanCastleKingside,
+                currentConditions.BlackCanCastleQueenside,
+                currentConditions.EnPassantSquare,
+                currentConditions.HalfMoveClock,
+                currentConditions.TurnNumber
+            );
+            game.ConditionsTimeline[game.ConditionsTimeline.HeadIndex] = currentConditions;
         }
     }
 
@@ -332,8 +349,11 @@ public class GameManager : NetworkBehaviour
     /// <param name="promotionPiece">Optional promotion piece (used in pawn promotion).</param>
     private async void OnPieceMoved(Square movedPieceInitialSquare, Transform movedPieceTransform, Transform closestBoardSquareTransform, Piece promotionPiece = null)
     {
+
         // Determine the destination square based on the name of the closest board square transform.
         Square endSquare = new Square(closestBoardSquareTransform.name);
+
+
 
         NetworkObject movedPieceNetworkObject = movedPieceTransform.GetComponent<NetworkObject>();
 
@@ -348,6 +368,8 @@ public class GameManager : NetworkBehaviour
         // Attempt to retrieve a legal move from the game logic.
         if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquare, out Movement move))
         {
+            Debug.LogWarning($"[SERVER] Move Rejected - {movedPieceInitialSquare} to {endSquare} is NOT legal!");
+
             // If no legal move is found, reset the piece's position.
             movedPieceTransform.position = movedPieceTransform.parent.position;
 #if DEBUG_VIEW
@@ -358,6 +380,7 @@ public class GameManager : NetworkBehaviour
 #endif
             return;
         }
+
 
         // If the move is a promotion move, set the promotion piece.
         if (move is PromotionMove promotionMove)
@@ -371,6 +394,8 @@ public class GameManager : NetworkBehaviour
             && TryExecuteMove(move)
         )
         {
+            Debug.Log($"[SERVER] Move Approved - Executing move {movedPieceInitialSquare} to {endSquare}");
+
             // For non-special moves, update the board visuals by destroying any piece at the destination.
             if (move is not SpecialMove) { BoardManager.Instance.TryDestroyVisualPiece(move.End); }
 
@@ -444,7 +469,6 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log("Two players connected, starting the game...");
             gameStarted = true;
-            StartGameServerRpc();
         }
     }
 
@@ -461,13 +485,22 @@ public class GameManager : NetworkBehaviour
         connectedPlayers.Remove(clientId);
         Debug.Log($"Player {clientId} disconnected. Remaining Players: {connectedPlayers.Count}");
 
-        if (IsServer && connectedPlayers.Count == 0)
+
+        // Check if the host (server) disconnected
+        if (clientId == NetworkManager.ServerClientId)
+        {
+            Debug.Log("Host disconnected! Resetting game.");
+            ResetGame();
+
+            // Optionally, notify all clients that the session has ended
+            NotifyGameEndClientRpc(false, false);
+        }
+        else if (IsServer && connectedPlayers.Count == 0)
         {
             Debug.Log("All players disconnected. Resetting game.");
             ResetGame();
         }
     }
-
 
     private void ResetGame()
     {
@@ -481,7 +514,17 @@ public class GameManager : NetworkBehaviour
     public void EndTurn()
     {
         isWhiteTurn = !isWhiteTurn;
+        SideToMove = isWhiteTurn ? Side.White : Side.Black;
+
+
         NotifyTurnChangeClientRpc(isWhiteTurn);
+        UpdateTurnIndicatorClientRpc(isWhiteTurn); // Force UI update on all clients
+    }
+
+    [ClientRpc]
+    private void UpdateTurnIndicatorClientRpc(bool whiteTurn)
+    {
+        UIManager.Instance.ValidateIndicators();
     }
 
     /// <summary>
@@ -490,9 +533,20 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void NotifyTurnChangeClientRpc(bool whiteTurn)
     {
-        Debug.Log($"Turn changed: {(whiteTurn ? "White's Turn" : "Black's Turn")}");
-        isWhiteTurn  = whiteTurn;
+        Debug.Log($"[CLIENT] Received Turn Change - Expected Turn: {(whiteTurn ? "White's Turn" : "Black's Turn")}");
+
+        // Explicitly set the turn variable
+        isWhiteTurn = whiteTurn;
+
+        // Force update of SideToMove on the client
+        SideToMove = isWhiteTurn ? Side.White : Side.Black;
+        Debug.Log($"[CLIENT] Forced SideToMove Update - Now: {(SideToMove == Side.White ? "White" : "Black")}");
+
+        // Update UI after ensuring SideToMove is set correctly
+        UIManager.Instance.ValidateIndicators();
     }
+
+
 
     /// <summary>
     /// Declares game end and syncs with clients.
@@ -516,147 +570,80 @@ public class GameManager : NetworkBehaviour
 
 
 
-    [ServerRpc(RequireOwnership = false)]
-    private void StartGameServerRpc()
-    {
-        Debug.Log("Game is starting...");
-
-        if (!gameStarted)
-        {
-            gameStarted = true;
-
-            // Ensure BoardManager spawns the pieces
-            if (BoardManager.Instance != null)
-            {
-                Debug.Log("Spawning chess pieces...");
-                //Startgame();
-
-            }
-            else
-            {
-                Debug.LogError("BoardManager is null! Pieces won't spawn.");
-            }
-
-            // Ensure the game logic is properly initialized
-            game = new Game();
-            NewGameStartedEvent?.Invoke(); // Notify all game components
-
-            NotifyStartGameClientRpc();
-
-        }
-
-    }
-
-    [ClientRpc]
-    private void NotifyStartGameClientRpc()
-    {
-        Debug.Log("Client: Game has started!");
-
-        if (BoardManager.Instance != null)
-        {
-            Debug.Log("Client: Setting up board...");
-            //BoardManager.Instance.SetupBoardForClient();
-        }
-        else
-        {
-            Debug.LogError("Client: BoardManager is null!");
-        }
-    }
-
-    public int LocalPlayerIndex
-    {
-        get
-        {
-            return connectedPlayers.IndexOf(LocalClientId);
-        }
-    }
 
 
     [ServerRpc(RequireOwnership = false)]
-    private void RequestMoveServerRpc(int startFile, int startRank, int endFile, int endRank, ServerRpcParams rpcParams = default)
+
+    public void RequestMoveServerRpc(ulong clientId, string startSquare, string endSquare)
     {
-        Square movedPieceInitialSquare = new Square(startFile, startRank);
-        Square endSquare = new Square(endFile, endRank);
+        if (!IsServer) return; // Ensure this only runs on the server
 
-        ulong playerId = rpcParams.Receive.SenderClientId;
+        Square movedPieceInitialSquare = new Square(startSquare);
+        Square endSquareObj = new Square(endSquare);
 
-        Debug.Log($"Host received move request from Player {playerId}: {movedPieceInitialSquare} to {endSquare}");
-
-        // Validate turn before executing the move
-        if ((isWhiteTurn && playerId != connectedPlayers[0]) ||
-            (!isWhiteTurn && playerId != connectedPlayers[1]))
+        if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquareObj, out Movement move))
         {
-            Debug.Log($"Player {playerId} tried to move out of turn!");
+            Debug.LogWarning($"[SERVER] Move Rejected - {movedPieceInitialSquare} to {endSquareObj} is NOT legal for Client {clientId}!");
             return;
         }
 
-        // Host executes the move
-        if (TryMovePiece(movedPieceInitialSquare, endSquare))
+        Debug.Log($"[SERVER] Move Approved - {movedPieceInitialSquare} to {endSquareObj}");
+
+        // Execute move on server
+        if ((move is not SpecialMove specialMove || TryHandleSpecialMoveBehaviourAsync(specialMove).Result)
+            && TryExecuteMove(move))
         {
-            if (isWhiteTurn == true)
-            {
-                isWhiteTurn = false;
+            // Destroy any piece at the destination on the server-side board
+            BoardManager.Instance.TryDestroyVisualPiece(move.End);
 
-            }
-            else
-            {
-                isWhiteTurn = true;
-            }
+            // Notify clients with the updated visual information
+            MovePieceClientRpc(startSquare, endSquare);
 
-                
-            NotifyMoveClientRpc(startFile, startRank, endFile, endRank, isWhiteTurn);
+            EndTurn();
         }
-    }
-
-    /// <summary>
-    /// Host handles piece movement validation.
-    /// </summary>
-    private bool TryMovePiece(Square start, Square end)
-    {
-        // Implement move validation logic here
-
-        Transform movedPieceTransform = BoardManager.Instance.GetPieceGOAtPosition(start).transform;
-        Transform closestBoardSquareTransform = BoardManager.Instance.GetSquareGOByPosition(end).transform;
-
-        if (movedPieceTransform != null && closestBoardSquareTransform != null)
-        {
-            movedPieceTransform.position = closestBoardSquareTransform.position;
-            return true; // Move successful
-        }
-
-        return false; // Move failed
-    }
-
-    /// <summary>
-    /// Clients call this method to request a move from the host.
-    /// </summary>
-    public void RequestMove(Square start, Square end)
-    {
-        RequestMoveServerRpc(start.File, start.Rank, end.File, end.Rank);
     }
 
 
     [ClientRpc]
-    private void NotifyMoveClientRpc(int startFile, int startRank, int endFile, int endRank, bool turn)
+    private void MovePieceClientRpc(string startSquare, string endSquare)
     {
-        Square startSquare = new Square(startFile, startRank);
-        Square endSquare = new Square(endFile, endRank);
+        // Convert the square names to Square objects
+        Square start = new Square(startSquare);
+        Square end = new Square(endSquare);
 
-        Debug.Log($"Client received move update: {startSquare} → {endSquare}");
+        // Get the piece GameObject at the start square using BoardManager
+        GameObject pieceGO = BoardManager.Instance.GetPieceGOAtPosition(start);
 
-        if (turn)
+        if(pieceGO != null)
         {
+            // Destroy any piece already at the destination
+            BoardManager.Instance.TryDestroyVisualPiece(end);
 
-            BoardManager.Instance.GetPieceGOAtPosition(startSquare).transform.SetParent(BoardManager.Instance.GetSquareGOByPosition(endSquare).transform);
-            BoardManager.Instance.GetPieceGOAtPosition(startSquare).transform.position = BoardManager.Instance.GetSquareGOByPosition(endSquare).transform.position;
+            // Get the destination square's GameObject
+            GameObject destSquareGO = BoardManager.Instance.GetSquareGOByPosition(end);
+            if (destSquareGO != null)
+            {
+                // Re-parent the piece to the destination square and update its position
+                pieceGO.transform.SetParent(destSquareGO.transform);
+                pieceGO.transform.position = destSquareGO.transform.position;
 
-            // Update turn indicators on UI
-            UIManager.Instance.ValidateIndicators();
-        } else
+                // Only re-enable NetworkTransform AFTER the move is confirmed by the server
+                NetworkTransform netTransform = pieceGO.GetComponent<NetworkTransform>();
+                if (netTransform != null)
+                {
+                    netTransform.enabled = true;
+                }
+            }
+        }
+        else
         {
-            Debug.Log("Not your turn!");
+            Debug.LogWarning($"[CLIENT] No piece found at {startSquare} for move.");
         }
     }
+
+
+
+
 
 
 }
