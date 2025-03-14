@@ -348,95 +348,61 @@ public class GameManager : NetworkBehaviour
     /// <param name="movedPieceTransform">The transform of the moved piece.</param>
     /// <param name="closestBoardSquareTransform">The transform of the closest board square.</param>
     /// <param name="promotionPiece">Optional promotion piece (used in pawn promotion).</param>
-    private async void OnPieceMoved(Square movedPieceInitialSquare, Transform movedPieceTransform, Transform closestBoardSquareTransform, Piece promotionPiece = null)
+    /// 
+    [System.Serializable]
+    public class MoveData
     {
-
-        // Determine the destination square based on the name of the closest board square transform.
-        Square endSquare = new Square(closestBoardSquareTransform.name);
-
-
-
-        // Ensure the piece has a NetworkObject before proceeding
-        // Even though our chess pieces do NOT have NetworkObjects, this check is crucial for movement synchronization.
-        // Here's why:
-        //
-        // Unity Netcode only syncs objects with a NetworkObject. 
-        //    - Our board is the only object with a NetworkObject, while pieces have NetworkTransform.
-        //    - Without this check, we might attempt to move a non-networked object, which could cause sync issues.
-        //
-        // If a client moves a piece, it MUST be validated by the server.
-        //    - This check prevents unauthorized movement attempts before validation.
-        //
-        // If the host moves a piece, it doesn't call a ServerRpc.
-        //    - Instead, movement updates are **automatically synchronized** because the board (which owns all pieces) is a NetworkObject.
-        //TLDR:
-        // - Host moves sync automatically since it is both the server and client.
-        // - Clients must request moves from the server, making this check **crucial** for ensuring proper validation.
-        // - Prevents desync issues by ensuring only valid networked objects are moved.
-        NetworkObject movedPieceNetworkObject = movedPieceTransform.GetComponent<NetworkObject>();
-
-        if (movedPieceNetworkObject == null)
+        public string Square;
+        public string StartSquare;
+        public string EndSquare;
+        public string PromotionPiece;
+    }
+    public static class PieceFactory
+    {
+        public static Piece CreatePiece(string pieceType)
         {
-            return;
-        }
-
-
-
-
-        // Attempt to retrieve a legal move from the game logic.
-        if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquare, out Movement move))
-        {
-            Debug.LogWarning($"[SERVER] Move Rejected - {movedPieceInitialSquare} to {endSquare} is NOT legal!");
-
-            // If no legal move is found, reset the piece's position.
-            movedPieceTransform.position = movedPieceTransform.parent.position;
-#if DEBUG_VIEW
-			// In debug view, log the legal moves for further analysis.
-			Piece movedPiece = CurrentBoard[movedPieceInitialSquare];
-			game.TryGetLegalMovesForPiece(movedPiece, out ICollection<Movement> legalMoves);
-			UnityChessDebug.ShowLegalMovesInLog(legalMoves);
-#endif
-            return;
-        }
-
-
-        // If the move is a promotion move, set the promotion piece.
-        if (move is PromotionMove promotionMove)
-        {
-            promotionMove.SetPromotionPiece(promotionPiece);
-        }
-
-        // If the move is not a special move or its special behaviour is successfully handled,
-        // and the move executes successfully...
-        if ((move is not SpecialMove specialMove || await TryHandleSpecialMoveBehaviourAsync(specialMove))
-            && TryExecuteMove(move)
-        )
-        {
-            Debug.Log($"[SERVER] Move Approved - Executing move {movedPieceInitialSquare} to {endSquare}");
-
-            // For non-special moves, update the board visuals by destroying any piece at the destination.
-            if (move is not SpecialMove) { BoardManager.Instance.TryDestroyVisualPiece(move.End); }
-
-            //For promotion moves, update the moved piece transform to the newly created visual piece.
-            if (move is PromotionMove)
+            return pieceType switch
             {
-                movedPieceTransform = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
-            }
-
-
-
-            // Re-parent the moved piece to the destination square and update its position.
-            //movedPieceTransform.SetParent(null); // Ensure piece is NOT parented to a non-NetworkObject
-            movedPieceTransform.SetParent(closestBoardSquareTransform);
-            movedPieceTransform.position = closestBoardSquareTransform.position;
-            EndTurn(); // Notify all clients that the turn has ended
-
-
-
-
-
+                "Pawn" => new Pawn(),
+                "Knight" => new Knight(),
+                "Bishop" => new Bishop(),
+                "Rook" => new Rook(),
+                "Queen" => new Queen(),
+                "King" => new King(),
+                _ => throw new ArgumentException("Invalid piece type")
+            };
         }
     }
+
+    public string ConvertGameStateToString()
+    {
+        return JsonUtility.ToJson(game); // to avoid complicated stupid network serialization >:((((
+    }
+
+    public void LoadGameFromString(string json)
+    {
+        game = JsonUtility.FromJson<Game>(json);
+        NewGameStartedEvent?.Invoke();
+    }
+
+
+    private void OnPieceMoved(Square movedPieceInitialSquare,
+                         Transform movedPieceTransform,
+                         Transform closestBoardSquareTransform,
+                         Piece promotionPiece = null)
+    {
+
+
+        MoveDTO moveData = new MoveDTO(movedPieceInitialSquare, movedPieceTransform, closestBoardSquareTransform, promotionPiece);
+
+        // Convert move data to JSON
+        string moveJson = JsonUtility.ToJson(moveData);
+
+
+        // Immediately request server validation
+        RequestMoveValidationServerRpc(moveJson);
+    }
+
 
     /// <summary>
     /// Determines whether the specified piece has any legal moves.
@@ -457,6 +423,7 @@ public class GameManager : NetworkBehaviour
     private bool gameStarted = false;
 
     public bool isWhiteTurn = true;
+
 
     public ulong LocalClientId => NetworkManager.Singleton.LocalClientId;
 
@@ -625,97 +592,58 @@ public class GameManager : NetworkBehaviour
 
 
 
-
     [ServerRpc(RequireOwnership = false)]
-
-    public void RequestMoveServerRpc(ulong clientId, string startSquare, string endSquare)
+    public    void RequestMoveValidationServerRpc(string moveJson)
     {
-        if (!IsServer) return; // Ensure this only runs on the server
+        Debug.Log($"[SERVER] Received move JSON: {moveJson}");
 
-        Square movedPieceInitialSquare = new Square(startSquare);
-        Square endSquareObj = new Square(endSquare);
+        game.ConditionsTimeline.TryGetCurrent(out GameConditions currentConditions);
+        Debug.Log($"[SERVER] SideToMove before move: {currentConditions.SideToMove}");
 
-        if (!game.TryGetLegalMove(movedPieceInitialSquare, endSquareObj, out Movement move))
+
+
+        // Deserialize the JSON into a MoveDTO.
+        MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(moveJson);
+        Debug.Log("Server Board FEN: " + new FENSerializer().Serialize(game)); // to check game synco
+
+
+        // Convert the initial square data back to a Square.
+        Square initialSquare = moveData.initialSquare.ToSquare();
+
+        //// For Transforms, find the GameObject by name and get its Transform.
+        //GameObject startObject = GameObject.Find(moveData.startTransform.name);
+        //Transform startTransform = (startObject != null) ? startObject.transform : null;
+
+        GameObject endObject = GameObject.Find(moveData.endTransform.name);
+        Transform endTransform = (endObject != null) ? endObject.transform : null;
+
+        // For the promotion piece, if data exists, create the appropriate Piece.
+      
+
+        Square endSquare = new Square(endTransform.name);
+
+
+
+        if (!game.TryGetLegalMove(initialSquare, endSquare, out Movement move))
         {
-            Debug.LogWarning($"[SERVER] Move Rejected - {movedPieceInitialSquare} to {endSquareObj} is NOT legal for Client {clientId}!");
-            return;
+            Debug.Log("[SERVER] Move rejected by game logic.");
+            Debug.Log($"[SERVER] Move from {initialSquare} to {endSquare} rejected. ");
+            Debug.Log(game.TryGetLegalMove(initialSquare, endSquare, out Movement move_));
+            RejectMoveClientRpc(moveJson);
         }
+        //else if (move is PromotionMove promotionMove)
+        //{
+        //    HandleSpecialMoveClientRpc(promotionPiece, promotionMove);
 
-        Debug.Log($"[SERVER] Move Approved - {movedPieceInitialSquare} to {endSquareObj}");
-
-        // Execute move on server
-        if ((move is not SpecialMove specialMove || TryHandleSpecialMoveBehaviourAsync(specialMove).Result)
-            && TryExecuteMove(move))
+        //}
+        else if ((move is not SpecialMove specialMove || await TryHandleSpecialMoveBehaviourAsync(specialMove)) && TryExecuteMove(move))//(await TryHandleSpecialMoveBehaviourAsync(specialMove) &&
         {
-            if (BoardManager.Instance.GetPieceGOAtPosition(move.End) != null)
-            {
-                BoardManager.Instance.TryDestroyVisualPiece(move.End);
-                Debug.Log($"[SERVER] Piece at {move.End} destroyed.");
-                SerializableSquare serializableSquare = SerializableSquare.FromSquare(move.End);
-
-                destroyedPieces.Add(serializableSquare);
-            }
-
-            DestroyPieceClientRpc(endSquare);
-
-
-            // Notify clients with the updated visual information
-            MovePieceClientRpc(startSquare, endSquare);
-
-            EndTurn();
-        }
-    }
-
-
-    [ClientRpc]
-    private void MovePieceClientRpc(string startSquare, string endSquare)
-    {
-        // Convert the square names to Square objects
-        Square start = new Square(startSquare);
-        Square end = new Square(endSquare);
-
-        // Get the piece GameObject at the start square using BoardManager
-        GameObject pieceGO = BoardManager.Instance.GetPieceGOAtPosition(start);
-
-        if(pieceGO != null)
+            Debug.Log("[SERVER] Move validated and executed.");
+            ValidateAndExecuteMoveClientRpc(moveJson);
+        } else
         {
-            // Destroy any piece already at the destination
-            BoardManager.Instance.TryDestroyVisualPiece(end);
 
-            // Get the destination square's GameObject
-            GameObject destSquareGO = BoardManager.Instance.GetSquareGOByPosition(end);
-            if (destSquareGO != null)
-            {
-                // Re-parent the piece to the destination square and update its position
-                pieceGO.transform.SetParent(destSquareGO.transform);
-                pieceGO.transform.position = destSquareGO.transform.position;
-
-                // Only re-enable NetworkTransform AFTER the move is confirmed by the server
-                NetworkTransform netTransform = pieceGO.GetComponent<NetworkTransform>();
-                if (netTransform != null)
-                {
-                    netTransform.enabled = true;
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"[CLIENT] No piece found at {startSquare} for move.");
-        }
-    }
-
-    [ClientRpc]
-    private void DestroyPieceClientRpc(string squarePosition)
-    {
-        Square endSquare = new Square(squarePosition);
-
-        if (BoardManager.Instance.GetPieceGOAtPosition(endSquare) != null)
-        {
-            BoardManager.Instance.TryDestroyVisualPiece(endSquare);
-            Debug.Log($"[CLIENT] Piece at {squarePosition} destroyed.");
-            SerializableSquare serializableSquare = SerializableSquare.FromSquare(endSquare);
-
-            destroyedPieces.Add(serializableSquare);
+            Debug.Log("[SERVER] Special move not executed.");
 
         }
     }
@@ -724,7 +652,70 @@ public class GameManager : NetworkBehaviour
 
 
 
+    [ClientRpc] //string start, string end, string mov
+    private void ValidateAndExecuteMoveClientRpc(string moveJson)
+    {
+        MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(moveJson);
+
+        //// For Transforms, find the GameObject by name and get its Transform.
+        GameObject startObject = GameObject.Find(moveData.startTransform.name);
+        Transform startTransform = (startObject != null) ? startObject.transform : null;
+
+        GameObject endObject = GameObject.Find(moveData.endTransform.name);
+        Transform endTransform = (endObject != null) ? endObject.transform : null;
+
+        Piece promotionPiece = null;
+        if (moveData.promotionPiece != null)
+        {
+            promotionPiece = PieceFactory.CreatePiece(moveData.promotionPiece.pieceType);
+        }
+
+        //// For non-special moves, update the board visuals by destroying any piece at the destination.
+        //if (move is not SpecialMove) { BoardManager.Instance.TryDestroyVisualPiece(startTransform); }
+
+        //// For promotion moves, update the moved piece transform to the newly created visual piece.
+        //if (move is PromotionMove)
+        //{
+        //    start = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
+        //}
+
+        // Re-parent the moved piece to the destination square and update its position.
+        startTransform.parent = endTransform;
+        startTransform.position = endTransform.position;
+        EndTurn();
+
+    }
+
+
+    [ClientRpc] // start startSquare
+    private void RejectMoveClientRpc(string JASON)
+    {
+
+        MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(JASON);
+
+        //// For Transforms, find the GameObject by name and get its Transform.
+        GameObject startObject = GameObject.Find(moveData.startTransform.name);
+        Transform startTransform = (startObject != null) ? startObject.transform : null;
+
+
+        startTransform.position = startTransform.parent.position;
+    }
+
+    //[ClientRpc]
+    //private void HandleSpecialMoveClientRpc(SerializablePiece piece, PromotionMove promotionMove)
+    //{
+    //    promotionMove.SetPromotionPiece(piece.ToPiece());
+    //    EndTurn();
+    //}
 
 
 }
+
+
+
+
+
+
+
+
 

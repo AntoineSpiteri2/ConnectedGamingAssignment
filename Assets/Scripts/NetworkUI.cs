@@ -12,30 +12,11 @@ public class NetworkUI : MonoBehaviour
     private UnityTransport transport;
     private void Awake()
     {
-        ServerButton.onClick.AddListener(StartServer );
         ClientButton.onClick.AddListener(StartClient);
         HostButton.onClick.AddListener(StartHost);
     }
 
-    private void StartServer()
-    {
-        try
-        {
-            if (!NetworkManager.Singleton.StartServer())
-            {
-                Debug.LogError("Failed to start server.");
-                return;
-            }
-            Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
-            CheckIfRunningLocally();
-            Destroy(Panel);
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Exception occurred while starting server: {ex.Message}");
-        }
-    }
-    
+
    void StartClient()
     {
         try

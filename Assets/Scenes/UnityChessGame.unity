@@ -295,7 +295,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.00354, y: -124}
+  m_AnchoredPosition: {x: 0.00354, y: -81.5}
   m_SizeDelta: {x: 319.5565, y: 61.6475}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &138168437
@@ -1038,20 +1038,45 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 79115762478850184, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Bishop2
+      objectReference: {fileID: 0}
+    - target: {fileID: 86564194083501288, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Rook1
+      objectReference: {fileID: 0}
     - target: {fileID: 324126189138502629, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3287670234
+      objectReference: {fileID: 0}
+    - target: {fileID: 549903212878362439, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn8
       objectReference: {fileID: 0}
     - target: {fileID: 677976994808359799, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3952443438
       objectReference: {fileID: 0}
+    - target: {fileID: 748000383919280529, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Queen1
+      objectReference: {fileID: 0}
     - target: {fileID: 790105589198030581, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 2496457609
+      objectReference: {fileID: 0}
+    - target: {fileID: 799711709787093606, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Rook2
       objectReference: {fileID: 0}
     - target: {fileID: 886496837792392949, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1072,6 +1097,11 @@ PrefabInstance:
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1034578290
+      objectReference: {fileID: 0}
+    - target: {fileID: 1139079488291004974, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black King1
       objectReference: {fileID: 0}
     - target: {fileID: 1280762934332163129, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1098,6 +1128,11 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1232511179
       objectReference: {fileID: 0}
+    - target: {fileID: 2185518898610782718, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn3
+      objectReference: {fileID: 0}
     - target: {fileID: 2259830482784077935, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
@@ -1108,15 +1143,45 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 3252158985
       objectReference: {fileID: 0}
+    - target: {fileID: 2730311720700658144, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Rook1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2919652582724716387, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Knight2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3103118936605656268, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn7
+      objectReference: {fileID: 0}
     - target: {fileID: 3234747720729826002, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1256155980
       objectReference: {fileID: 0}
+    - target: {fileID: 3246015499193948009, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn3
+      objectReference: {fileID: 0}
+    - target: {fileID: 3444893490369318705, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White King1
+      objectReference: {fileID: 0}
     - target: {fileID: 3546750925422267902, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 2694480185
+      objectReference: {fileID: 0}
+    - target: {fileID: 3570748025216662890, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn4
       objectReference: {fileID: 0}
     - target: {fileID: 3609292855666859042, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1133,10 +1198,20 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 3494900907
       objectReference: {fileID: 0}
+    - target: {fileID: 3854746913965806289, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn5
+      objectReference: {fileID: 0}
     - target: {fileID: 3872152797529352475, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1463077575
+      objectReference: {fileID: 0}
+    - target: {fileID: 3876432623837609179, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn6
       objectReference: {fileID: 0}
     - target: {fileID: 4027837052018220808, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1158,10 +1233,25 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 4052776536
       objectReference: {fileID: 0}
+    - target: {fileID: 4310296472549205319, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Bishop2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4342317139256739383, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn2
+      objectReference: {fileID: 0}
     - target: {fileID: 4431700658969473626, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 4154527971
+      objectReference: {fileID: 0}
+    - target: {fileID: 4450865543209347395, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn1
       objectReference: {fileID: 0}
     - target: {fileID: 4531799695749602871, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1187,6 +1277,11 @@ PrefabInstance:
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 3437444091
+      objectReference: {fileID: 0}
+    - target: {fileID: 5336050096015969803, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Bishop2
       objectReference: {fileID: 0}
     - target: {fileID: 5385397971602351371, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1218,15 +1313,40 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 2633725796
       objectReference: {fileID: 0}
+    - target: {fileID: 5613498092840068620, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn8
+      objectReference: {fileID: 0}
     - target: {fileID: 5784042070197795808, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 2765071146
       objectReference: {fileID: 0}
+    - target: {fileID: 5796425231755980667, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Rook1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5811841917758214646, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5925268810199981769, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Pawn7
+      objectReference: {fileID: 0}
     - target: {fileID: 6130853180800958408, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 4130045868
+      objectReference: {fileID: 0}
+    - target: {fileID: 6449673059448589322, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn5
       objectReference: {fileID: 0}
     - target: {fileID: 6517503183592971940, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1237,6 +1357,11 @@ PrefabInstance:
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 1653555982
+      objectReference: {fileID: 0}
+    - target: {fileID: 6608624797599398197, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Knight2
       objectReference: {fileID: 0}
     - target: {fileID: 6640139059410313876, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1273,10 +1398,20 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 4015619408
       objectReference: {fileID: 0}
+    - target: {fileID: 6880113755930986717, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn1
+      objectReference: {fileID: 0}
     - target: {fileID: 6882465025898019299, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 4266233871
+      objectReference: {fileID: 0}
+    - target: {fileID: 6920988234934851059, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Bishop1
       objectReference: {fileID: 0}
     - target: {fileID: 7065935601210005963, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1293,10 +1428,20 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1352143657
       objectReference: {fileID: 0}
+    - target: {fileID: 7360354607425052783, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Knight1
+      objectReference: {fileID: 0}
     - target: {fileID: 7519810731748668172, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
       value: 743368515
+      objectReference: {fileID: 0}
+    - target: {fileID: 7565023257171334850, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn4
       objectReference: {fileID: 0}
     - target: {fileID: 7662419719897035399, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
@@ -1403,6 +1548,11 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 1518274660
       objectReference: {fileID: 0}
+    - target: {fileID: 8604961254227972785, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Knight1
+      objectReference: {fileID: 0}
     - target: {fileID: 8697245349481089297, guid: 100b3a33d215ef342be4f39a27701706,
         type: 3}
       propertyPath: GlobalObjectIdHash
@@ -1422,6 +1572,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Board
+      objectReference: {fileID: 0}
+    - target: {fileID: 9080104359736335530, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: White Queen1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9127227010959158649, guid: 100b3a33d215ef342be4f39a27701706,
+        type: 3}
+      propertyPath: m_Name
+      value: Black Pawn2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1690,7 +1850,6 @@ RectTransform:
   - {fileID: 715330096}
   - {fileID: 591503965}
   - {fileID: 138168436}
-  - {fileID: 1425005274}
   m_Father: {fileID: 1835287060}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1736,263 +1895,6 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1077328088}
-  m_CullTransparentMesh: 1
---- !u!1 &1163433719
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1163433720}
-  - component: {fileID: 1163433722}
-  - component: {fileID: 1163433721}
-  m_Layer: 5
-  m_Name: Text (TMP)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1163433720
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1163433719}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1425005274}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1163433721
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1163433719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_text: Server
-  m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
-  m_fontMaterial: {fileID: 0}
-  m_fontMaterials: []
-  m_fontColor32:
-    serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
-  m_enableVertexGradient: 0
-  m_colorMode: 3
-  m_fontColorGradient:
-    topLeft: {r: 1, g: 1, b: 1, a: 1}
-    topRight: {r: 1, g: 1, b: 1, a: 1}
-    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
-    bottomRight: {r: 1, g: 1, b: 1, a: 1}
-  m_fontColorGradientPreset: {fileID: 0}
-  m_spriteAsset: {fileID: 0}
-  m_tintAllSprites: 0
-  m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: -1183493901
-  m_overrideHtmlColors: 0
-  m_faceColor:
-    serializedVersion: 2
-    rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
-  m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
-  m_textAlignment: 65535
-  m_characterSpacing: 0
-  m_wordSpacing: 0
-  m_lineSpacing: 0
-  m_lineSpacingMax: 0
-  m_paragraphSpacing: 0
-  m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
-  m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
-  m_linkedTextComponent: {fileID: 0}
-  parentLinkedComponent: {fileID: 0}
-  m_enableKerning: 1
-  m_enableExtraPadding: 0
-  checkPaddingRequired: 0
-  m_isRichText: 1
-  m_parseCtrlCharacters: 1
-  m_isOrthographic: 1
-  m_isCullingEnabled: 0
-  m_horizontalMapping: 0
-  m_verticalMapping: 0
-  m_uvLineOffset: 0
-  m_geometrySortingOrder: 0
-  m_IsTextObjectScaleStatic: 0
-  m_VertexBufferAutoSizeReduction: 0
-  m_useMaxVisibleDescender: 1
-  m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
-  m_isUsingLegacyAnimationComponent: 0
-  m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
-  m_baseMaterial: {fileID: 0}
-  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!222 &1163433722
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1163433719}
-  m_CullTransparentMesh: 1
---- !u!1 &1425005273
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1425005274}
-  - component: {fileID: 1425005277}
-  - component: {fileID: 1425005276}
-  - component: {fileID: 1425005275}
-  m_Layer: 5
-  m_Name: Serverbtn
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &1425005274
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1425005273}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1163433720}
-  m_Father: {fileID: 1077328089}
-  m_RootOrder: -1
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.003509, y: -42}
-  m_SizeDelta: {x: 319.5565, y: 61.6475}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1425005275
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1425005273}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Navigation:
-    m_Mode: 3
-    m_WrapAround: 0
-    m_SelectOnUp: {fileID: 0}
-    m_SelectOnDown: {fileID: 0}
-    m_SelectOnLeft: {fileID: 0}
-    m_SelectOnRight: {fileID: 0}
-  m_Transition: 1
-  m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  m_SpriteState:
-    m_HighlightedSprite: {fileID: 0}
-    m_PressedSprite: {fileID: 0}
-    m_SelectedSprite: {fileID: 0}
-    m_DisabledSprite: {fileID: 0}
-  m_AnimationTriggers:
-    m_NormalTrigger: Normal
-    m_HighlightedTrigger: Highlighted
-    m_PressedTrigger: Pressed
-    m_SelectedTrigger: Selected
-    m_DisabledTrigger: Disabled
-  m_Interactable: 1
-  m_TargetGraphic: {fileID: 1425005276}
-  m_OnClick:
-    m_PersistentCalls:
-      m_Calls: []
---- !u!114 &1425005276
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1425005273}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!222 &1425005277
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1425005273}
   m_CullTransparentMesh: 1
 --- !u!1 &1435481865
 GameObject:
@@ -2514,7 +2416,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c82afa038b174a44596d4814d6f3698c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ServerButton: {fileID: 1425005275}
+  ServerButton: {fileID: 0}
   ClientButton: {fileID: 138168437}
   HostButton: {fileID: 591503966}
   Panel: {fileID: 1077328088}

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace UnityChess {
 	/// <summary>Representation of a standard chess game including a history of moves made.</summary>
@@ -58,17 +59,43 @@ namespace UnityChess {
 			return true;
 		}
 
-		public bool TryGetLegalMove(Square startSquare, Square endSquare, out Movement move) {
-			move = null;
+        public bool TryGetLegalMove(Square startSquare, Square endSquare, out Movement move)
+        {
+            move = null;
+            if (!BoardTimeline.TryGetCurrent(out Board currentBoard))
+            {
+                System.Diagnostics.Debug.WriteLine("[GAME] No current board found.");
+                return false;
+            }
+            if (!LegalMovesTimeline.TryGetCurrent(out Dictionary<Piece, Dictionary<(Square, Square), Movement>> currentLegalMoves))
+            {
+                System.Diagnostics.Debug.WriteLine("[GAME] No current legal moves found.");
+                return false;
+            }
+            if (!(currentBoard[startSquare] is Piece movingPiece))
+            {
+                System.Diagnostics.Debug.WriteLine($"[GAME] No piece found at {startSquare}.");
+                return false;
+            }
+            if (!currentLegalMoves.TryGetValue(movingPiece, out Dictionary<(Square, Square), Movement> movesByStartEndSquares))
+            {
+                System.Diagnostics.Debug.WriteLine($"[GAME] No legal moves recorded for piece {movingPiece} at {startSquare}.");
+                return false;
+            }
+            if (!movesByStartEndSquares.TryGetValue((startSquare, endSquare), out move))
+            {
+                System.Diagnostics.Debug.WriteLine($"[GAME] Move from {startSquare} to {endSquare} not found. Available moves for this piece:");
+                foreach (var key in movesByStartEndSquares.Keys)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  From {key.Item1} to {key.Item2}");
+                }
+                return false;
+            }
+            return true;
+        }
 
-			return BoardTimeline.TryGetCurrent(out Board currentBoard)
-			       && LegalMovesTimeline.TryGetCurrent(out Dictionary<Piece, Dictionary<(Square, Square), Movement>> currentLegalMoves)
-			       && currentBoard[startSquare] is { } movingPiece
-			       && currentLegalMoves.TryGetValue(movingPiece, out Dictionary<(Square, Square), Movement> movesByStartEndSquares)
-			       && movesByStartEndSquares.TryGetValue((startSquare, endSquare), out move);
-		}
-		
-		public bool TryGetLegalMovesForPiece(Piece movingPiece, out ICollection<Movement> legalMoves) {
+
+        public bool TryGetLegalMovesForPiece(Piece movingPiece, out ICollection<Movement> legalMoves) {
 			legalMoves = null;
 
 			if (movingPiece != null
