@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Drawing.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Unity.Netcode.Components;
 using UnityChess;
 using UnityEngine;
@@ -9,47 +12,49 @@ using static UnityChess.SquareUtil;
 /// such as dragging and dropping pieces, and determines the closest square on the board
 /// where the piece should land. It also raises an event when a piece has been moved.
 /// </summary>
-public class VisualPiece : MonoBehaviour {
-	// Delegate for handling the event when a visual piece has been moved.
-	// Parameters: the initial square of the piece, its transform, the closest square's transform,
-	// and an optional promotion piece.
-	public delegate void VisualPieceMovedAction(Square movedPieceInitialSquare, Transform movedPieceTransform, Transform closestBoardSquareTransform, Piece promotionPiece = null);
-	
-	// Static event raised when a visual piece is moved.
-	public static event VisualPieceMovedAction VisualPieceMoved;
-	
-	// The colour (side) of the piece (White or Black).
-	public Side PieceColor;
-	
-	// Retrieves the current board square of the piece by converting its parent's name into a Square.
-	public Square CurrentSquare => StringToSquare(transform.parent.name);
+public class VisualPiece : MonoBehaviour
+{
+    // Delegate for handling the event when a visual piece has been moved.
+    // Parameters: the initial square of the piece, its transform, the closest square's transform,
+    // and an optional promotion piece.
+    public delegate void VisualPieceMovedAction(Square movedPieceInitialSquare, Transform movedPieceTransform, Transform closestBoardSquareTransform, Piece promotionPiece = null);
+
+    // Static event raised when a visual piece is moved.
+    public static event VisualPieceMovedAction VisualPieceMoved;
+
+    // The colour (side) of the piece (White or Black).
+    public Side PieceColor;
+
+    // Retrieves the current board square of the piece by converting its parent's name into a Square.
+    public Square CurrentSquare => StringToSquare(transform.parent.name);
 
     // The radius used to detect nearby board squares for collision detection.
-     private const float SquareCollisionRadius = 9f;
-	
-	// The camera used to view the board.
-	private Camera boardCamera;
-	// The screen-space position of the piece when it is first picked up.
-	private Vector3 piecePositionSS;
-	// A reference to the piece's SphereCollider (if required for collision handling).
-	private SphereCollider pieceBoundingSphere;
-    // A list to hold potential board square GameObjects that the piece might land on.
-    [SerializeField]  private List<GameObject> potentialLandingSquares;
+    private const float SquareCollisionRadius = 9f;
 
-	//[SerializeField] private int OwnerNum; // 0 for white (host), 1 for black (client) as allow the host or client to move the pieces and not both
+    // The camera used to view the board.
+    private Camera boardCamera;
+    // The screen-space position of the piece when it is first picked up.
+    private Vector3 piecePositionSS;
+    // A reference to the piece's SphereCollider (if required for collision handling).
+    private SphereCollider pieceBoundingSphere;
+    // A list to hold potential board square GameObjects that the piece might land on.
+    [SerializeField] private List<GameObject> potentialLandingSquares;
+
+    //[SerializeField] private int OwnerNum; // 0 for white (host), 1 for black (client) as allow the host or client to move the pieces and not both
     // A cached reference to the transform of this piece.
     private NetworkTransform networkTransform;
 
-	/// <summary>
-	/// Initialises the visual piece. Sets up necessary variables and obtains a reference to the main camera.
-	/// </summary>
-	private void Start() {
-		// Initialise the list to hold potential landing squares.
-		potentialLandingSquares = new List<GameObject>();
+    /// <summary>
+    /// Initialises the visual piece. Sets up necessary variables and obtains a reference to the main camera.
+    /// </summary>
+    private void Start()
+    {
+        // Initialise the list to hold potential landing squares.
+        potentialLandingSquares = new List<GameObject>();
         // Cache the transform of this GameObject for efficiency.
         networkTransform = GetComponent<NetworkTransform>();
-		// Obtain the main camera from the scene.
-		boardCamera = Camera.main;
+        // Obtain the main camera from the scene.
+        boardCamera = Camera.main;
 
     }
 
@@ -101,7 +106,6 @@ public class VisualPiece : MonoBehaviour {
     }
 
 
-
     /// <summary>
     /// Called while the user drags the piece with the mouse.
     /// Updates the piece's world position to follow the mouse cursor.
@@ -121,10 +125,13 @@ public class VisualPiece : MonoBehaviour {
 
     }
 
+
     /// <summary>
     /// Called when the user releases the mouse button after dragging the piece.
     /// Determines the closest board square to the piece and raises an event with the move.
     /// </summary>
+
+
     public void OnMouseUp()
     {
         if (PieceColor != GameManager.Instance.SideToMove)
@@ -168,18 +175,76 @@ public class VisualPiece : MonoBehaviour {
             }
             Debug.Log($"[CLIENT] Attempting Move from {CurrentSquare} to {closestSquareTransform.name}");
 
-            VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+            GameObject Movedpiece = BoardManager.Instance.GetPieceGOAtPosition(CurrentSquare);
+            // Access the piece from the board logic.
+            Piece piece = GameManager.Instance.CurrentBoard[CurrentSquare];
+            Square destinationSquare = StringToSquare(closestSquareTransform.name);
 
-            // Re-enable Network Transform after move is finished
-            NetworkTransform netTransform = GetComponent<NetworkTransform>();
-            if (netTransform != null)
+            if (piece is Pawn && (destinationSquare.Rank == 8 || destinationSquare.Rank == 1))
             {
-                netTransform.enabled = true;
+                ShowMneu(closestSquareTransform);
+               
+
+
+
+
             }
-            // this is way more accurate  than putting this in  movepiecemethod cause lets say you move pawn to a3 but in client it shows a6   so it will be a bug this fixes that
-            //GameManager.Instance.RequestMoveServerRpc(GameManager.Instance.LocalClientId, CurrentSquare.ToString(), closestSquareTransform.name);
+            else
+            {
+                VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+
+                // Re-enable Network Transform after move is finished
+                NetworkTransform netTransform = GetComponent<NetworkTransform>();
+                if (netTransform != null)
+                {
+                    netTransform.enabled = true;
+                }
+            }
+
+
+
+
+
 
         }
+
+
+    }
+
+    public async Task ShowMneu(Transform closestSquareTransform)
+    {
+        Square startSquare = CurrentSquare;
+        Square endSquare = StringToSquare(closestSquareTransform.name);
+
+        if (GameManager.Instance.game.TryGetLegalMove(startSquare, endSquare, out Movement move))
+        {
+
+            if ((move is not SpecialMove specialMove || await GameManager.Instance.TryHandleSpecialMoveBehaviourAsync(specialMove)))
+            {
+                VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+
+                // Re-enable Network Transform after move is finished
+                NetworkTransform netTransform = GetComponent<NetworkTransform>();
+                if (netTransform != null)
+                {
+                    netTransform.enabled = true;
+                }
+            }
+            else
+            {
+                VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+
+                // Re-enable Network Transform after move is finished
+                NetworkTransform netTransform = GetComponent<NetworkTransform>();
+                if (netTransform != null)
+                {
+                    netTransform.enabled = true;
+                }
+            }
+
+
+        }
+
     }
 
 

@@ -134,12 +134,12 @@ public class GameManager : NetworkBehaviour
     // Reference to the debug utility for the chess engine.
     [SerializeField] private UnityChessDebug unityChessDebug;
     // The current game instance.
-    private Game game;
+    public Game game;
     // Serializers for game state (FEN and PGN formats).
     private FENSerializer fenSerializer;
     private PGNSerializer pgnSerializer;
     // Cancellation token source for asynchronous promotion UI tasks.
-    private CancellationTokenSource promotionUITaskCancellationTokenSource;
+    public CancellationTokenSource promotionUITaskCancellationTokenSource;
     // Stores the user's choice for promotion; initialised to none.
     private ElectedPiece userPromotionChoice = ElectedPiece.None;
     // Mapping of game serialization types to their corresponding serializers.
@@ -252,7 +252,7 @@ public class GameManager : NetworkBehaviour
     /// </summary>
     /// <param name="specialMove">The special move to process.</param>
     /// <returns>A task that resolves to true if the special move was handled; otherwise, false.</returns>
-    private async Task<bool> TryHandleSpecialMoveBehaviourAsync(SpecialMove specialMove)
+    public async Task<bool> TryHandleSpecialMoveBehaviourAsync(SpecialMove specialMove)
     {
         switch (specialMove)
         {
@@ -314,7 +314,7 @@ public class GameManager : NetworkBehaviour
     /// Blocks until the user selects a piece for pawn promotion.
     /// </summary>
     /// <returns>The elected promotion piece chosen by the user.</returns>
-    private ElectedPiece GetUserPromotionPieceChoice()
+    public ElectedPiece GetUserPromotionPieceChoice()
     {
         // Wait until the user selects a promotion piece.
         while (userPromotionChoice == ElectedPiece.None) { }

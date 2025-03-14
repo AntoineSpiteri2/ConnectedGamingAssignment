@@ -90,13 +90,42 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     /// <param name="position">The board square where the piece should be placed.</param>
     public void CreateAndPlacePieceGO(Piece piece, Square position)
     {
-        // Construct the model name based on the piece's owner and type.
+        //int randomnum = new System.Random().Next(3, 100001); // to prevent dupes of the same model name as that will cause bugs
         string modelName = $"{piece.Owner} {piece.GetType().Name}";
-        // Instantiate the piece GameObject from the corresponding resource.
+        GameObject pieceObject = Resources.Load("PieceSets/Marble/" + modelName) as GameObject;
+        //pieceObject.name += randomnum;
         GameObject pieceGO = Instantiate(
-            Resources.Load("PieceSets/Marble/" + modelName) as GameObject,
+            pieceObject,
             positionMap[position].transform
         );
+
+        // IMPORTANT: Ensure this code runs on the server/host
+        if (NetworkManager.Singleton.IsServer)
+        {
+            NetworkObject netObj = pieceGO.GetComponent<NetworkObject>();
+            if (netObj != null)
+            {
+                netObj.Spawn(); // Replicates the object to all clients
+
+                // Retrieve the parent's NetworkObject component
+                GameObject parentGO = GetSquareGOByPosition(position);
+                NetworkObject parentNetObj = parentGO.GetComponent<NetworkObject>();
+
+                if (parentNetObj != null)
+                {
+                    // Correctly set the network parent
+                    netObj.TrySetParent(parentNetObj, true); // Set to false if you want to change local position
+                }
+                else
+                {
+                    Debug.LogWarning("Parent GameObject does not have a NetworkObject component!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Spawned piece prefab has no NetworkObject component!");
+            }
+        }
     }
 
     /// <summary>
