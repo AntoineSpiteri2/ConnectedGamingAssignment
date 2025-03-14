@@ -1,0 +1,929 @@
+using System;
+using System.Collections.Generic;
+
+namespace UnityChess {
+	/// <summary>An 8x8 matrix representation of a chessboard.</summary>
+	public class Board {
+		private readonly Piece[,] boardMatrix;
+		private readonly Dictionary<Side, Square?> currentKingSquareBySide = new Dictionary<Side, Square?> {
+			[Side.White] = null,
+			[Side.Black] = null
+		};
+
+		public Piece this[Square position] {
+			get {
+				if (position.IsValid()) return boardMatrix[position.File - 1, position.Rank - 1];
+				throw new ArgumentOutOfRangeException($"Position was out of range: {position}");
+			}
+
+			set {
+				if (position.IsValid()) boardMatrix[position.File - 1, position.Rank - 1] = value;
+				else throw new ArgumentOutOfRangeException($"Position was out of range: {position}");
+			}
+		}
+
+		public Piece this[int file, int rank] {
+			get => this[new Square(file, rank)];
+			set => this[new Square(file, rank)] = value;
+		}
+
+		/// <summary>Creates a Board given the passed square-piece pairs.</summary>
+		public Board(params (Square, Piece)[] squarePiecePairs) {
+			boardMatrix = new Piece[8, 8];
+			
+			foreach ((Square position, Piece piece) in squarePiecePairs) {
+				this[position] = piece;
+			}
+		}
+
+		/// <summary>Creates a deep copy of the passed Board.</summary>
+		public Board(Board board) {
+			// TODO optimize this method
+			// Creates deep copy (makes copy of each piece and deep copy of their respective ValidMoves lists) of board (list of BasePiece's)
+			// this may be a memory hog since each Board has a list of Piece's, and each piece has a list of Movement's
+			// avg number turns/Board's per game should be around ~80. usual max number of pieces per board is 32
+			boardMatrix = new Piece[8, 8];
+			for (int file = 1; file <= 8; file++) {
+				for (int rank = 1; rank <= 8; rank++) {
+					Piece pieceToCopy = board[file, rank];
+					if (pieceToCopy == null) { continue; }
+
+					this[file, rank] = pieceToCopy.DeepCopy();
+				}
+			}
+		}
+
+		public void ClearBoard() {
+			for (int file = 1; file <= 8; file++) {
+				for (int rank = 1; rank <= 8; rank++) {
+					this[file, rank] = null;
+				}
+			}
+
+			currentKingSquareBySide[Side.White] = null;
+			currentKingSquareBySide[Side.Black] = null;
+		}
+
+		public static readonly (Square, Piece)[] StartingPositionPieces = {
+			(new Square("a1"), new Rook(Side.White)),
+			(new Square("b1"), new Knight(Side.White)),
+			(new Square("c1"), new Bishop(Side.White)),
+			(new Square("d1"), new Queen(Side.White)),
+			(new Square("e1"), new King(Side.White)),
+			(new Square("f1"), new Bishop(Side.White)),
+			(new Square("g1"), new Knight(Side.White)),
+			(new Square("h1"), new Rook(Side.White)),
+			
+			(new Square("a2"), new Pawn(Side.White)),
+			(new Square("b2"), new Pawn(Side.White)),
+			(new Square("c2"), new Pawn(Side.White)),
+			(new Square("d2"), new Pawn(Side.White)),
+			(new Square("e2"), new Pawn(Side.White)),
+			(new Square("f2"), new Pawn(Side.White)),
+			(new Square("g2"), new Pawn(Side.White)),
+			(new Square("h2"), new Pawn(Side.White)),
+			
+			(new Square("a8"), new Rook(Side.Black)),
+			(new Square("b8"), new Knight(Side.Black)),
+			(new Square("c8"), new Bishop(Side.Black)),
+			(new Square("d8"), new Queen(Side.Black)),
+			(new Square("e8"), new King(Side.Black)),
+			(new Square("f8"), new Bishop(Side.Black)),
+			(new Square("g8"), new Knight(Side.Black)),
+			(new Square("h8"), new Rook(Side.Black)),
+			
+			(new Square("a7"), new Pawn(Side.Black)),
+			(new Square("b7"), new Pawn(Side.Black)),
+			(new Square("c7"), new Pawn(Side.Black)),
+			(new Square("d7"), new Pawn(Side.Black)),
+			(new Square("e7"), new Pawn(Side.Black)),
+			(new Square("f7"), new Pawn(Side.Black)),
+			(new Square("g7"), new Pawn(Side.Black)),
+			(new Square("h7"), new Pawn(Side.Black)),
+		};
+
+		public void MovePiece(Movement move) {
+			if (this[move.Start] is not { } pieceToMove) {
+				throw new ArgumentException($"No piece was found at the given position: {move.Start}");
+			}
+
+			this[move.Start] = null;
+			this[move.End] = pieceToMove;
+
+			if (pieceToMove is King) {
+				currentKingSquareBySide[pieceToMove.Owner] = move.End;
+			}
+
+			(move as SpecialMove)?.HandleAssociatedPiece(this);
+		}
+		
+		internal bool IsOccupiedAt(Square position) => this[position] != null;
+
+		internal bool IsOccupiedBySideAt(Square position, Side side) => this[position] is Piece piece && piece.Owner == side;
+
+		public Square GetKingSquare(Side player) {
+			if (currentKingSquareBySide[player] == null) {
+				for (int file = 1; file <= 8; file++) {
+					for (int rank = 1; rank <= 8; rank++) {
+						if (this[file, rank] is King king) {
+							currentKingSquareBySide[king.Owner] = new Square(file, rank);
+						}
+					}
+				}
+			}
+
+			return currentKingSquareBySide[player] ?? Square.Invalid;
+		}
+
+		public string ToTextArt() {
+			string result = string.Empty;
+			
+			for (int rank = 8; rank >= 1; --rank) {
+				for (int file = 1; file <= 8; ++file) {
+					Piece piece = this[file, rank];
+					result += piece.ToTextArt();
+					result += file != 8
+						? "|"
+						: $"\t {rank}";
+				}
+
+				result += "\n";
+			}
+			
+			result += "a b c d e f g h";
+
+			return result;
+		} 
+	}
+}
+
+
+using System;
+
+namespace UnityChess {
+	/// <summary>Representation of a castling move; inherits from SpecialMove.</summary>
+	public class CastlingMove : SpecialMove {
+		public readonly Square RookSquare;
+
+		/// <summary>Creates a new CastlingMove instance.</summary>
+		/// <param name="kingPosition">Position of the king to be castled.</param>
+		/// <param name="end">Square on which the king will land on.</param>
+		/// <param name="rookSquare">The square of the rook associated with the castling move.</param>
+		public CastlingMove(Square kingPosition, Square end, Square rookSquare) : base(kingPosition, end) {
+			RookSquare = rookSquare;
+		}
+
+		/// <summary>Handles moving the associated rook to the correct position on the board.</summary>
+		/// <param name="board">Board on which the move is being made.</param>
+		public override void HandleAssociatedPiece(Board board) {
+			if (board[RookSquare] is Rook rook) {
+				board[RookSquare] = null;
+				board[GetRookEndSquare()] = rook;
+			} else {
+				throw new ArgumentException(
+					$"{nameof(CastlingMove)}.{nameof(HandleAssociatedPiece)}:\n"
+					+ $"No {nameof(Rook)} found at {nameof(RookSquare)}"
+				);
+			}
+		}
+
+		public Square GetRookEndSquare() {
+			int rookFileOffset = RookSquare.File switch {
+				1 => 3,
+				8 => -2,
+				_ => throw new ArgumentException(
+					$"{nameof(RookSquare)}.{nameof(RookSquare.File)} is invalid"
+				)
+			};
+
+			return RookSquare + new Square(rookFileOffset, 0);
+		}
+	}
+}
+
+namespace UnityChess {
+	public enum ElectedPiece {
+		Knight = 0,
+		Bishop = 1,
+		Rook = 2,
+		Queen = 3,
+		None = -1
+	}
+}
+
+namespace UnityChess {
+	/// <summary>Representation of an en passant move; inherits from SpecialMove.</summary>
+	public class EnPassantMove : SpecialMove {
+		public readonly Square CapturedPawnSquare;
+
+		/// <summary>Creates a new EnPassantMove instance; inherits from SpecialMove.</summary>
+		/// <param name="attackingPawnPosition">Position of the attacking pawn.</param>
+		/// <param name="end">Square on which the attacking pawn will land on.</param>
+		/// <param name="capturedPawnSquare">Square of the pawn that is being captured via en passant.</param>
+		public EnPassantMove(Square attackingPawnPosition, Square end, Square capturedPawnSquare) :
+			base(attackingPawnPosition, end) {
+			CapturedPawnSquare = capturedPawnSquare;
+		}
+
+		/// <summary>Handles removing the captured pawn from the board.</summary>
+		/// <param name="board">Board on which the move is being made.</param>
+		public override void HandleAssociatedPiece(Board board) {
+			board[CapturedPawnSquare] = null;
+		}
+	}
+}
+
+
+using System.Collections.Generic;
+using System.Diagnostics;
+
+namespace UnityChess {
+	/// <summary>Representation of a standard chess game including a history of moves made.</summary>
+	public class Game {
+		public Timeline<GameConditions> ConditionsTimeline { get; }
+		public Timeline<Board> BoardTimeline { get; }
+		public Timeline<HalfMove> HalfMoveTimeline { get; }
+		public Timeline<Dictionary<Piece, Dictionary<(Square, Square), Movement>>> LegalMovesTimeline { get; }
+
+		/// <summary>Creates a Game instance of a given mode with a standard starting Board.</summary>
+		public Game() : this(GameConditions.NormalStartingConditions, Board.StartingPositionPieces) { }
+
+		public Game(GameConditions startingConditions, params (Square, Piece)[] squarePiecePairs) {
+			Board startingBoard = new Board(squarePiecePairs);
+			BoardTimeline = new Timeline<Board> { startingBoard };
+			HalfMoveTimeline = new Timeline<HalfMove>();
+			ConditionsTimeline = new Timeline<GameConditions> { startingConditions };
+			LegalMovesTimeline = new Timeline<Dictionary<Piece, Dictionary<(Square, Square), Movement>>> {
+				CalculateLegalMovesForPosition(startingBoard, startingConditions)
+			};
+		}
+
+		/// <summary>Executes passed move and switches sides; also adds move to history.</summary>
+		public bool TryExecuteMove(Movement move) {
+			if (!TryGetLegalMove(move.Start, move.End, out Movement validatedMove)) {
+				return false;
+			}
+
+			//create new copy of previous current board, and execute the move on it
+			BoardTimeline.TryGetCurrent(out Board boardBeforeMove);
+			Board resultingBoard = new Board(boardBeforeMove);
+			resultingBoard.MovePiece(validatedMove);
+			BoardTimeline.AddNext(resultingBoard);
+			
+			ConditionsTimeline.TryGetCurrent(out GameConditions conditionsBeforeMove); 
+			Side updatedSideToMove = conditionsBeforeMove.SideToMove.Complement();
+			bool causedCheck = Rules.IsPlayerInCheck(resultingBoard, updatedSideToMove);
+			bool capturedPiece = boardBeforeMove[validatedMove.End] != null || validatedMove is EnPassantMove;
+			
+			HalfMove halfMove = new HalfMove(boardBeforeMove[validatedMove.Start], validatedMove, capturedPiece, causedCheck);
+			GameConditions resultingGameConditions = conditionsBeforeMove.CalculateEndingConditions(boardBeforeMove, halfMove);
+			ConditionsTimeline.AddNext(resultingGameConditions);
+
+			Dictionary<Piece, Dictionary<(Square, Square), Movement>> legalMovesByPiece
+				= CalculateLegalMovesForPosition(resultingBoard, resultingGameConditions);
+
+			int numLegalMoves = GetNumLegalMoves(legalMovesByPiece);
+
+			LegalMovesTimeline.AddNext(legalMovesByPiece);
+
+			halfMove.SetGameEndBools(
+				Rules.IsPlayerStalemated(resultingBoard, updatedSideToMove, numLegalMoves),
+				Rules.IsPlayerCheckmated(resultingBoard, updatedSideToMove, numLegalMoves)
+			);
+			HalfMoveTimeline.AddNext(halfMove);
+			
+			return true;
+		}
+
+        public bool TryGetLegalMove(Square startSquare, Square endSquare, out Movement move)
+        {
+            move = null;
+            if (!BoardTimeline.TryGetCurrent(out Board currentBoard))
+            {
+                System.Diagnostics.Debug.WriteLine("[GAME] No current board found.");
+                return false;
+            }
+            if (!LegalMovesTimeline.TryGetCurrent(out Dictionary<Piece, Dictionary<(Square, Square), Movement>> currentLegalMoves))
+            {
+                System.Diagnostics.Debug.WriteLine("[GAME] No current legal moves found.");
+                return false;
+            }
+            if (!(currentBoard[startSquare] is Piece movingPiece))
+            {
+                System.Diagnostics.Debug.WriteLine($"[GAME] No piece found at {startSquare}.");
+                return false;
+            }
+            if (!currentLegalMoves.TryGetValue(movingPiece, out Dictionary<(Square, Square), Movement> movesByStartEndSquares))
+            {
+                System.Diagnostics.Debug.WriteLine($"[GAME] No legal moves recorded for piece {movingPiece} at {startSquare}.");
+                return false;
+            }
+            if (!movesByStartEndSquares.TryGetValue((startSquare, endSquare), out move))
+            {
+                System.Diagnostics.Debug.WriteLine($"[GAME] Move from {startSquare} to {endSquare} not found. Available moves for this piece:");
+                foreach (var key in movesByStartEndSquares.Keys)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  From {key.Item1} to {key.Item2}");
+                }
+                return false;
+            }
+            return true;
+        }
+
+
+        public bool TryGetLegalMovesForPiece(Piece movingPiece, out ICollection<Movement> legalMoves) {
+			legalMoves = null;
+
+			if (movingPiece != null
+			    && LegalMovesTimeline.TryGetCurrent(out Dictionary<Piece, Dictionary<(Square, Square), Movement>> legalMovesByPiece)
+			    && legalMovesByPiece.TryGetValue(movingPiece, out Dictionary<(Square, Square), Movement> movesByStartEndSquares)
+			    && movesByStartEndSquares != null
+			) {
+				legalMoves = movesByStartEndSquares.Values;
+				return true;
+			}
+
+			return false;
+		}
+
+		public bool ResetGameToHalfMoveIndex(int halfMoveIndex) {
+			if (HalfMoveTimeline.HeadIndex == -1) {
+				return false;
+			}
+
+			BoardTimeline.HeadIndex = halfMoveIndex + 1;
+			ConditionsTimeline.HeadIndex = halfMoveIndex + 1;
+			LegalMovesTimeline.HeadIndex = halfMoveIndex + 1;
+			HalfMoveTimeline.HeadIndex = halfMoveIndex;
+
+			return true;
+		}
+		
+		internal static int GetNumLegalMoves(Dictionary<Piece, Dictionary<(Square, Square), Movement>> legalMovesByPiece) {
+			int result = 0;
+			
+			if (legalMovesByPiece != null) {
+				foreach (Dictionary<(Square, Square), Movement> movesByStartEndSquares in legalMovesByPiece.Values) {
+					result += movesByStartEndSquares.Count;
+				}
+			}
+
+			return result;
+		}
+		
+		internal static Dictionary<Piece, Dictionary<(Square, Square), Movement>> CalculateLegalMovesForPosition(
+			Board board,
+			GameConditions gameConditions
+		) {
+			Dictionary<Piece, Dictionary<(Square, Square), Movement>> result = null;
+			
+			for (int file = 1; file <= 8; file++) {
+				for (int rank = 1; rank <= 8; rank++) {
+					if (board[file, rank] is Piece piece
+					    && piece.Owner == gameConditions.SideToMove
+					    && piece.CalculateLegalMoves(board, gameConditions, new Square(file, rank)) is
+						    { } movesByStartEndSquares
+					) {
+						if (result == null) {
+							result = new Dictionary<Piece, Dictionary<(Square, Square), Movement>>();
+						}
+
+						result[piece] = movesByStartEndSquares;
+					}
+				}
+			}
+
+			return result;
+		}
+	}
+}
+
+using System;
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public struct HalfMove {
+		public readonly Piece Piece;
+		public readonly Movement Move;
+		public readonly bool CapturedPiece;
+		public readonly bool CausedCheck;
+		public bool CausedStalemate { get; private set; }
+		public bool CausedCheckmate { get; private set; }
+		
+		private static readonly Dictionary<Type, string> pieceTypeToANSymbolMap = new Dictionary<Type, string> {
+			{ typeof(Pawn), "" },
+			{ typeof(Knight), "N" },
+			{ typeof(Bishop), "B" },
+			{ typeof(Rook), "R" },
+			{ typeof(Queen), "Q" },
+			{ typeof(King), "K" },		
+		};
+
+		public HalfMove(Piece piece, Movement move, bool capturedPiece, bool causedCheck) {
+			Piece = piece;
+			Move = move;
+			CapturedPiece = capturedPiece;
+			CausedCheck = causedCheck;
+			CausedCheckmate = default;
+			CausedStalemate = default;
+		}
+
+		public void SetGameEndBools(bool causedStalemate, bool causedCheckmate) {
+			CausedCheckmate = causedCheckmate;
+			CausedStalemate = causedStalemate;
+		}
+		
+		// TODO handle ambiguous piece moves.
+		public string ToAlgebraicNotation() {
+			string pieceSymbol = Piece is Pawn && CapturedPiece
+				? SquareUtil.FileIntToCharMap[Move.Start.File]
+				: pieceTypeToANSymbolMap[Piece.GetType()];
+
+			string capture = CapturedPiece ? "x" : string.Empty;
+			string endSquare = SquareUtil.SquareToString(Move.End);
+			string suffix = CausedCheckmate
+				? "#"
+				: CausedCheck
+					? "+"
+					: string.Empty;
+
+			string moveText;
+			switch (Piece) {
+				case King when Move is CastlingMove: {
+					moveText = Move.End.File == 3 ? $"O-O-O{suffix}" : $"O-O{suffix}";
+					break;
+				}
+				case Pawn: {
+					string promotionPiece = Move is PromotionMove promotionMove
+						? $"={pieceTypeToANSymbolMap[promotionMove.PromotionPiece.GetType()]}"
+						: string.Empty;
+
+					moveText = $"{pieceSymbol}{capture}{endSquare}{promotionPiece}{suffix}";
+					break;
+				}
+				default: {
+					moveText = $"{pieceSymbol}{capture}{endSquare}{suffix}";
+					break;
+				}
+			}
+
+			return moveText;
+		}
+	}
+}
+
+
+namespace UnityChess {
+	/// <summary>Representation of a move, namely a piece and its end square.</summary>
+	public class Movement {
+		public readonly Square Start;
+		public readonly Square End;
+
+		/// <summary>Creates a new Movement.</summary>
+		/// <param name="piecePosition">Position of piece being moved.</param>
+		/// <param name="end">Square which the piece will land on.</param>
+		public Movement(Square piecePosition, Square end) {
+			Start = piecePosition;
+			End = end;
+		}
+
+		/// <summary>Copy constructor.</summary>
+		internal Movement(Movement move) {
+			Start = move.Start;
+			End = move.End;
+		}
+		
+		protected bool Equals(Movement other) => Start == other.Start && End == other.End;
+
+		public override bool Equals(object obj) {
+			if (ReferenceEquals(null, obj)) return false;
+			if (ReferenceEquals(this, obj)) return true;
+			return GetType() == obj.GetType() && Equals((Movement) obj);
+		}
+
+		public override int GetHashCode() {
+			unchecked {
+				return (Start.GetHashCode() * 397) ^ End.GetHashCode();
+			}
+		}
+
+		public override string ToString() => $"{Start}->{End}";
+	}
+}
+
+
+using System;
+
+namespace UnityChess {
+	/// <summary>Representation of a promotion move; inherits from SpecialMove.</summary>
+	public class PromotionMove : SpecialMove {
+		public Piece PromotionPiece { get; private set; }
+
+        /// <summary>Creates a new PromotionMove instance; inherits from SpecialMove.</summary>
+        /// <param name="pawnPosition">Position of the promoting pawn.</param>
+        /// <param name="end">Square which the promoting pawn is landing on.</param>
+        /// 
+        public PromotionMove(Movement baseMove) : base(baseMove.Start, baseMove.End) { }
+
+        public PromotionMove(Square pawnPosition, Square end) : base(pawnPosition, end) { }
+
+		/// <summary>Handles replacing the promoting pawn with the elected promotion piece.</summary>
+		/// <param name="board">Board on which the move is being made.</param>
+		public override void HandleAssociatedPiece(Board board) {
+			if (PromotionPiece == null) {
+				throw new ArgumentNullException(
+					$"{nameof(HandleAssociatedPiece)}:\n"
+					+ $"{nameof(PromotionMove)}.{nameof(PromotionPiece)} was null.\n"
+					+ $"You must first call {nameof(PromotionMove)}.{nameof(SetPromotionPiece)}"
+					+ $" before it can be executed."
+				);
+			}
+			
+			board[End] = PromotionPiece;
+		}
+
+		public void SetPromotionPiece(Piece promotionPiece) {
+			PromotionPiece = promotionPiece;
+		}
+	}
+}
+
+
+namespace UnityChess {
+	public static class PromotionUtil {
+		public static Piece GeneratePromotionPiece(ElectedPiece election, Side side) => election switch {
+			ElectedPiece.Bishop => new Bishop(side),
+			ElectedPiece.Knight => new Knight(side),
+			ElectedPiece.Queen => new Queen(side),
+			ElectedPiece.Rook => new Rook(side),
+			_ => null
+		};
+	}
+}
+
+using System;
+
+namespace UnityChess {
+	/// <summary>Contains methods for checking legality of moves and board positions.</summary>
+	public static class Rules {
+		/// <summary>Checks if the player of the given side has been checkmated.</summary>
+		public static bool IsPlayerCheckmated(Board board, Side player, int numLegalMoves) =>
+			numLegalMoves <= 0 && IsPlayerInCheck(board, player);
+
+		/// <summary>Checks if the player of the given side has been stalemated.</summary>
+		public static bool IsPlayerStalemated(Board board, Side player, int numLegalMoves) =>
+			numLegalMoves <= 0 && !IsPlayerInCheck(board, player);
+
+		/// <summary>Checks if the player of the given side is in check.</summary>
+		public static bool IsPlayerInCheck(Board board, Side player) =>
+			IsSquareAttacked(board.GetKingSquare(player), board, player);
+
+		internal static bool MoveObeysRules(Board board, Movement move, Side movedPieceSide) {
+			if (!move.Start.IsValid()
+			    || !move.End.IsValid()
+				|| board[move.End] is King
+			    || board.IsOccupiedBySideAt(move.End, movedPieceSide)
+			) { return false; }
+			
+			Board resultingBoard = new Board(board);
+			resultingBoard.MovePiece(new Movement(move.Start, move.End));
+			
+			return !IsPlayerInCheck(resultingBoard, movedPieceSide);
+		}
+
+		public static bool IsSquareAttacked(Square squareInQuestion, Board board, Side friendlySide) {
+			Side enemySide = friendlySide.Complement();
+			int friendlyForward = friendlySide.ForwardDirection();
+
+			foreach (Square offset in SquareUtil.SurroundingOffsets) {
+				bool isDiagonalOffset = Math.Abs(offset.File) == Math.Abs(offset.Rank);
+				Square endSquare = squareInQuestion + offset;
+
+				while (endSquare.IsValid() && !board.IsOccupiedBySideAt(endSquare, friendlySide)) {
+					if (board.IsOccupiedBySideAt(endSquare, enemySide)) {
+						int fileDistance = Math.Abs(endSquare.File - squareInQuestion.File);
+						int rankDistance = Math.Abs(endSquare.Rank - squareInQuestion.Rank);
+
+						Piece enemyPiece = board[endSquare];
+						switch (enemyPiece) {
+							case Queen:
+							case Bishop when isDiagonalOffset:
+							case Rook when !isDiagonalOffset:
+							case King when fileDistance <= 1 && rankDistance <= 1:
+							case Pawn when fileDistance == 1
+							               && endSquare.Rank == squareInQuestion.Rank + friendlyForward:
+								return true;
+						}
+						
+						// stop checking this diagonal in the case of enemy knight
+						break;
+					}
+
+					endSquare += offset;
+				}
+			}
+			
+			foreach (Square offset in SquareUtil.KnightOffsets) {
+				Square endSquare = squareInQuestion + offset;
+				
+				if (endSquare.IsValid()
+				    && board[endSquare] is Knight knight
+				    && knight.Owner == enemySide
+				) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+}
+
+using System.ComponentModel;
+
+namespace UnityChess {
+	/// <summary>Used to describe which side's turn it currently is, and which side a piece belongs to.</summary>
+	public enum Side {
+		None,
+		Black,
+		White
+	}
+
+	public static class SideMethods {
+		public static Side Complement(this Side side) => side switch {
+			Side.White => Side.Black,
+			Side.Black => Side.White,
+			_ => throw new InvalidEnumArgumentException(nameof(side), (int) side, typeof(Side))
+		};
+		
+		public static int ForwardDirection(this Side side) => side switch {
+			Side.White => 1,
+			Side.Black => -1,
+			_ => throw new InvalidEnumArgumentException(nameof(side), (int) side, typeof(Side))
+		};
+		
+		public static int CastlingRank(this Side side) => side switch {
+			Side.White => 1,
+			Side.Black => 8,
+			_ => throw new InvalidEnumArgumentException(nameof(side), (int) side, typeof(Side))
+		};
+		
+		public static int PawnRank(this Side side) => side switch {
+			Side.White => 2,
+			Side.Black => 7,
+			_ => throw new InvalidEnumArgumentException(nameof(side), (int) side, typeof(Side))
+		};
+	}
+}
+
+namespace UnityChess {
+	public abstract class SpecialMove : Movement {
+		protected SpecialMove(Square piecePosition, Square end)
+			: base(piecePosition, end) { }
+
+		public abstract void HandleAssociatedPiece(Board board);
+	}
+}
+
+
+namespace UnityChess {
+	/// <summary>Representation of a square on a chessboard.</summary>
+	public readonly struct Square {
+
+
+        public static readonly Square Invalid = new Square(-1, -1);
+		public readonly int File;
+		public readonly int Rank;
+
+		/// <summary>Creates a new Square instance.</summary>
+		/// <param name="file">Column of the square.</param>
+		/// <param name="rank">Row of the square.</param>
+		public Square(int file, int rank) {
+			File = file;
+			Rank = rank;
+		}
+
+		public Square(string squareString) {
+			this = string.IsNullOrEmpty(squareString)
+				? Invalid
+				: SquareUtil.StringToSquare(squareString);
+		}
+
+		internal Square(Square startPosition, int fileOffset, int rankOffset) {
+			File = startPosition.File + fileOffset;
+			Rank = startPosition.Rank + rankOffset;
+		}
+		
+		internal readonly bool IsValid() {
+			return File is >= 1 and <= 8
+			       && Rank is >= 1 and <= 8;
+		}
+
+		public static bool operator ==(Square lhs, Square rhs) => lhs.File == rhs.File && lhs.Rank == rhs.Rank;
+		public static bool operator !=(Square lhs, Square rhs) => !(lhs == rhs);
+		public static Square operator +(Square lhs, Square rhs) => new Square(lhs.File + rhs.File, lhs.Rank + rhs.Rank);
+		
+		public bool Equals(Square other) => File == other.File && Rank == other.Rank;
+
+		public bool Equals(int file, int rank) => File == file && Rank == rank;
+
+		public override bool Equals(object obj) {
+			if (ReferenceEquals(null, obj)) return false;
+
+			return obj is Square other && Equals(other);
+		}
+
+		public override int GetHashCode() {
+			unchecked {
+				return (File * 397) ^ Rank;
+			}
+		}
+
+
+
+
+		public override string ToString() => SquareUtil.SquareToString(this);
+	}
+}
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public static class SquareUtil {
+		public static readonly Dictionary<string, int> FileCharToIntMap = new() {
+			{"a", 1},
+			{"b", 2},
+			{"c", 3},
+			{"d", 4},
+			{"e", 5},
+			{"f", 6},
+			{"g", 7},
+			{"h", 8}
+		};
+		
+		public static readonly Dictionary<int, string> FileIntToCharMap = new() {
+			{1, "a"},
+			{2, "b"},
+			{3, "c"},
+			{4, "d"},
+			{5, "e"},
+			{6, "f"},
+			{7, "g"},
+			{8, "h"}
+		};
+		
+		public static readonly Square[] KnightOffsets = {
+			new(-2, -1),
+			new(-2, 1),
+			new(2, -1),
+			new(2, 1),
+			new(-1, -2),
+			new(-1, 2),
+			new(1, -2),
+			new(1, 2),
+		};
+		
+		public static readonly Square[] SurroundingOffsets = {
+			new(-1, 0),
+			new(1, 0),
+			new(0, -1),
+			new(0, 1),
+			new(-1, 1),
+			new(-1, -1),
+			new(1, -1),
+			new(1, 1),
+		};
+
+		public static readonly Square[] DiagonalOffsets = {
+			new(-1, 1),
+			new(-1, -1),
+			new(1, -1),
+			new(1, 1)
+		};
+		
+		public static readonly Square[] CardinalOffsets = {
+			new(-1, 0),
+			new(1, 0),
+			new(0, -1),
+			new(0, 1),
+		};
+		
+		
+	
+		public static string SquareToString(Square square) => SquareToString(square.File, square.Rank);
+		public static string SquareToString(int file, int rank) {
+			if (FileIntToCharMap.TryGetValue(file, out string fileChar)) {
+				return $"{fileChar}{rank}";
+			}
+
+			return "Invalid";
+		}
+
+		public static Square StringToSquare(string squareText) {
+			return new Square(
+				FileCharToIntMap[squareText[0].ToString()],
+				int.Parse(squareText[1].ToString())
+			);
+		}
+	}
+}
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class Timeline<T> : IList<T> {
+		public bool TryGetCurrent(out T current) {
+			current = default;
+
+			if (0 <= headIndexBacking && headIndexBacking < list.Count) {
+				current = list[headIndexBacking];
+				return true;
+			}
+
+			return false;
+		}
+
+		public int Count => list.Count;
+		public bool IsReadOnly => false;
+		public bool IsUpToDate => headIndexBacking == list.Count - 1;
+		public int HeadIndex {
+			get => headIndexBacking;
+			set => headIndexBacking = Math.Min(value, list.Count - 1);
+		} private int headIndexBacking;
+		
+		private readonly List<T> list;
+		private int FutureElementsStartIndex => headIndexBacking + 1;
+		private int NumFutureElements => list.Count - FutureElementsStartIndex;
+
+		public Timeline() {
+			headIndexBacking = -1;
+			list = new List<T>();
+		}
+		
+		public void Add(T element) => AddNext(element);
+		
+		public List<T> GetStartToCurrent() => list.GetRange(0, headIndexBacking + 1);
+
+		public List<T> PopFuture() {
+			List<T> elementRange = list.GetRange(FutureElementsStartIndex, NumFutureElements);
+			Prune();
+			return elementRange;
+		}
+
+		public void AddNext(T element) {
+			Prune();
+			list.Add(element);
+			headIndexBacking++;
+		}
+
+		private void Prune() {
+			if (!IsUpToDate) {
+				list.RemoveRange(FutureElementsStartIndex, NumFutureElements);
+			}
+		}
+		
+		public void Clear() {
+			list.Clear();
+			headIndexBacking = -1;
+		}
+
+		public bool Contains(T item) {
+			return list.Contains(item);
+		}
+
+		public void CopyTo(T[] array, int arrayIndex) {
+			list.CopyTo(array, arrayIndex);
+		}
+
+		public bool Remove(T item) {
+			return list.Remove(item);
+		}
+
+		public IEnumerator<T> GetEnumerator() {
+			return list.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator() {
+			return GetEnumerator();
+		}
+
+		public int IndexOf(T item) {
+			return list.IndexOf(item);
+		}
+
+		public void Insert(int index, T item) {
+			list.Insert(index, item);
+		}
+
+		public void RemoveAt(int index) {
+			list.RemoveAt(index);
+		}
+
+		public T this[int index] {
+			get => list[index];
+			set => list[index] = value;
+		}
+	}
+}

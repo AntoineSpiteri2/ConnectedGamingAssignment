@@ -1,0 +1,433 @@
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class Bishop : Piece<Bishop> {
+		public Bishop() : base(Side.None) {}
+		public Bishop(Side owner) : base(owner) {}
+
+		public override Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		) {
+			Dictionary<(Square, Square), Movement> result = null;
+
+			foreach (Square offset in SquareUtil.DiagonalOffsets) {
+				Square endSquare = position + offset;
+
+				while (endSquare.IsValid()) {
+					Movement testMove = new Movement(position, endSquare);
+
+					if (Rules.MoveObeysRules(board, testMove, Owner)) {
+						if (result == null) {
+							result = new Dictionary<(Square, Square), Movement>();
+						}
+
+						result[(testMove.Start, testMove.End)] = new Movement(testMove);
+					}
+					
+					if (board.IsOccupiedAt(endSquare)) {
+						break;
+					}
+
+					endSquare += offset;
+				}
+			}
+
+			return result;
+		}
+	}
+}
+
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class King : Piece<King> {
+		private static readonly int[] rookFiles = { 1, 8 };
+		
+		public King() : base(Side.None) {}
+		public King(Side owner) : base(owner) {}
+
+		public override Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		) {
+			Dictionary<(Square, Square), Movement> result = null;
+
+			CheckSurroundingSquares(board, position, ref result);
+
+			if (Owner == Side.White) {
+				CheckCastlingMoves(
+					board,
+					position,
+					gameConditions.WhiteCanCastleKingside,
+					gameConditions.WhiteCanCastleQueenside,
+					ref result
+				);
+			} else {
+				CheckCastlingMoves(
+					board,
+					position,
+					gameConditions.BlackCanCastleKingside,
+					gameConditions.BlackCanCastleQueenside,
+					ref result
+				);
+			}
+
+			return result;
+		}
+
+		private void CheckSurroundingSquares(
+			Board board,
+			Square position,
+			ref Dictionary<(Square, Square), Movement> movesByStartEndSquare
+		) {
+			foreach (Square offset in SquareUtil.SurroundingOffsets) {
+				Movement testMove = new Movement(position, position + offset);
+
+				if (Rules.MoveObeysRules(board, testMove, Owner)) {
+					if (movesByStartEndSquare == null) {
+						movesByStartEndSquare = new Dictionary<(Square, Square), Movement>();
+					}
+					
+					movesByStartEndSquare[(testMove.Start, testMove.End)] = new Movement(testMove);
+				}
+			}
+		}
+
+		private void CheckCastlingMoves(
+			Board board,
+			Square position,
+			bool canCastleKingSide,
+			bool canCastleQueenside,
+			ref Dictionary<(Square, Square), Movement> movesByStartEndSquare
+		) {
+			if (Rules.IsPlayerInCheck(board, Owner)
+				|| !canCastleKingSide && !canCastleQueenside
+			) { return; }
+
+			int castlingRank = Owner.CastlingRank();
+			
+			foreach (int rookFile in rookFiles) {
+				bool checkingQueenside = rookFile == 1;
+
+				Square rookSquare = new Square(rookFile, castlingRank);
+				if (board[rookSquare] is not Rook rook
+				    || rook.Owner != Owner
+				    || checkingQueenside && !canCastleQueenside
+				    || !checkingQueenside && !canCastleKingSide
+				) {
+					continue;
+				}
+				
+				Square inBetweenSquare0 = new Square(checkingQueenside ? 4 : 6, castlingRank);
+				Square inBetweenSquare1 = new Square(checkingQueenside ? 3 : 7, castlingRank);
+				Square inBetweenSquare2 = new Square(2, castlingRank);
+				Movement castlingMove = new CastlingMove(position, inBetweenSquare1, rookSquare);
+				
+				if (!board.IsOccupiedAt(inBetweenSquare0)
+				    && !board.IsOccupiedAt(inBetweenSquare1)
+				    && (!board.IsOccupiedAt(inBetweenSquare2) || !checkingQueenside)
+				    && !Rules.IsSquareAttacked(inBetweenSquare0, board, Owner)
+				    && !Rules.IsSquareAttacked(inBetweenSquare1, board, Owner)
+				    && Rules.MoveObeysRules(board, castlingMove, Owner)
+				) {
+					if (movesByStartEndSquare == null) {
+						movesByStartEndSquare = new Dictionary<(Square, Square), Movement>();
+					}
+
+					movesByStartEndSquare[(position, inBetweenSquare1)]
+						= new CastlingMove(position, inBetweenSquare1, rookSquare);
+				}
+			}
+		}
+	}
+}
+
+
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class Knight : Piece<Knight> {
+		public Knight() : base(Side.None) {}
+		public Knight(Side owner) : base(owner) {}
+
+		public override Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		) {
+			Dictionary<(Square, Square), Movement> result = null;
+			
+			foreach (Square offset in SquareUtil.KnightOffsets) {
+				Movement testMove = new Movement(position, position + offset);
+
+				if (Rules.MoveObeysRules(board, testMove, Owner)) {
+					if (result == null) {
+						result = new Dictionary<(Square, Square), Movement>();
+					}
+					
+					result[(testMove.Start, testMove.End)] = new Movement(testMove);
+				}
+			}
+
+			return result;
+		}
+	}
+}
+
+
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class Pawn : Piece<Pawn> {
+		private static readonly int[] adjacentFileOffsets = {-1, 1};
+		
+		public Pawn() : base(Side.None) {}
+		public Pawn(Side owner) : base(owner) {}
+
+		public override Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		) {
+			Dictionary<(Square, Square), Movement> result = null;
+			
+			CheckForwardMovingSquares(board, position, ref result);
+			CheckAttackingSquares(board, position, ref result);
+			CheckEnPassantCaptures(board, position, gameConditions.EnPassantSquare, ref result);
+
+			return result;
+		}
+
+		private void CheckForwardMovingSquares(
+			Board board,
+			Square position,
+			ref Dictionary<(Square, Square), Movement> movesByStartEndSquares
+		) {
+			int forwardDirection = Owner.ForwardDirection();
+			Square endSquare = new Square(position, 0, forwardDirection);
+			Movement testMove = new Movement(position, endSquare);
+			
+			if (!board.IsOccupiedAt(endSquare)
+			) {
+				if (Rules.MoveObeysRules(board, testMove, Owner)) {
+					if (movesByStartEndSquares == null) {
+						movesByStartEndSquares = new Dictionary<(Square, Square), Movement>();
+					}
+
+					bool amOnEnemyPawnRank = position.Rank == Owner.Complement().PawnRank();
+					movesByStartEndSquares[(position, endSquare)] = amOnEnemyPawnRank
+						? new PromotionMove(position, endSquare)
+						: new Movement(position, endSquare);
+				}
+				
+				if (position.Rank == Owner.PawnRank()) {
+					endSquare += new Square(0, forwardDirection);
+					testMove = new Movement(position, endSquare);
+					if (!board.IsOccupiedAt(endSquare)
+					    && Rules.MoveObeysRules(board, testMove, Owner)
+					) {
+						if (movesByStartEndSquares == null) {
+							movesByStartEndSquares = new Dictionary<(Square, Square), Movement>();
+						}
+
+						movesByStartEndSquares[(testMove.Start, testMove.End)] = new Movement(testMove);
+					}
+				}
+			}
+		}
+
+		private void CheckAttackingSquares(
+			Board board,
+			Square position,
+			ref Dictionary<(Square, Square), Movement> movesByStartEndSquares
+		) {
+			foreach (int fileOffset in adjacentFileOffsets) {
+				Square endSquare = position + new Square(fileOffset, Owner.ForwardDirection());
+				Movement testMove = new Movement(position, endSquare);
+
+				if (endSquare.IsValid()
+					&& board.IsOccupiedBySideAt(endSquare, Owner.Complement())
+				    && Rules.MoveObeysRules(board, testMove, Owner)
+				) {
+					if (movesByStartEndSquares == null) {
+						movesByStartEndSquares = new Dictionary<(Square, Square), Movement>();
+					}
+
+					bool amOnEnemyPawnRank = position.Rank == Owner.Complement().PawnRank();
+					movesByStartEndSquares[(testMove.Start, testMove.End)] = amOnEnemyPawnRank
+						? new PromotionMove(position, endSquare)
+						: new Movement(testMove);
+				}
+			}
+		}
+
+		private void CheckEnPassantCaptures(
+			Board board,
+			Square position,
+			Square enPassantEligibleSquare,
+			ref Dictionary<(Square, Square), Movement> movesByStartEndSquares
+		) {
+			int enPassantCaptureRank = Owner == Side.White ? 5 : 4;
+			if (position.Rank != enPassantCaptureRank) {
+				return;
+			}
+
+			Square capturedPawnSquare = enPassantEligibleSquare + new Square(0, -Owner.ForwardDirection());
+			if (capturedPawnSquare.IsValid()
+			    && board[capturedPawnSquare] is Pawn capturedPawn
+			    && capturedPawn.Owner != Owner
+			    && Rules.MoveObeysRules(board, new EnPassantMove(position, enPassantEligibleSquare, capturedPawnSquare), Owner)
+			) {
+				if (movesByStartEndSquares == null) {
+					movesByStartEndSquares = new Dictionary<(Square, Square), Movement>();
+				}
+
+				movesByStartEndSquares[(position, enPassantEligibleSquare)] = new EnPassantMove(
+					position,
+					enPassantEligibleSquare,
+					capturedPawnSquare
+				);
+			}
+		}
+	}
+}
+
+
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	/// <summary>Base class for any chess piece.</summary>
+	public abstract class Piece {
+		public Side Owner { get; protected set; }
+
+		protected Piece(Side owner) {
+			Owner = owner;
+		}
+
+		public abstract Piece DeepCopy();
+
+		public abstract Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		);
+		
+		public override string ToString() => $"{Owner} {GetType().Name}";
+
+		public string ToTextArt() => this switch {
+			Bishop { Owner: Side.White } => "♝",
+			Bishop { Owner: Side.Black } => "♗",
+			King { Owner: Side.White } => "♚",
+			King { Owner: Side.Black } => "♔",
+			Knight { Owner: Side.White } => "♞",
+			Knight { Owner: Side.Black } => "♘",
+			Queen { Owner: Side.White } => "♛",
+			Queen { Owner: Side.Black } => "♕",
+			Pawn { Owner: Side.White } => "♟",
+			Pawn { Owner: Side.Black } => "♙",
+			Rook { Owner: Side.White } => "♜",
+			Rook { Owner: Side.Black } => "♖",
+			_ => "."
+		};
+	}
+
+	public abstract class Piece<T> : Piece where T : Piece<T>, new() {
+		protected Piece(Side owner) : base(owner) { }
+		
+		public override Piece DeepCopy() {
+			return new T {
+				Owner = Owner
+			};
+		}
+	}
+}
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class Queen : Piece<Queen> {
+		public Queen() : base(Side.None) {}
+		public Queen(Side owner) : base(owner) {}
+
+		public override Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		) {
+			Dictionary<(Square, Square), Movement> result = null;
+
+			foreach (Square offset in SquareUtil.SurroundingOffsets) {
+				Square endSquare = position + offset;
+
+				while (endSquare.IsValid()) {
+					Movement testMove = new Movement(position, endSquare);
+
+					if (Rules.MoveObeysRules(board, testMove, Owner)) {
+						if (result == null) {
+							result = new Dictionary<(Square, Square), Movement>();
+						}
+
+						result[(testMove.Start, testMove.End)] = new Movement(testMove);
+					}
+					
+					if (board.IsOccupiedAt(endSquare)) {
+						break;
+					}
+					
+					endSquare += offset;
+				}
+			}
+
+			return result;
+		}
+	}
+}
+
+
+using System.Collections.Generic;
+
+namespace UnityChess {
+	public class Rook : Piece<Rook> {
+		public Rook() : base(Side.None) {}
+		public Rook(Side owner) : base(owner) {}
+
+		public override Dictionary<(Square, Square), Movement> CalculateLegalMoves(
+			Board board,
+			GameConditions gameConditions,
+			Square position
+		) {
+			Dictionary<(Square, Square), Movement> result = null;
+
+			foreach (Square offset in SquareUtil.CardinalOffsets) {
+				Square endSquare = position + offset;
+
+				while (endSquare.IsValid()) {
+					Movement testMove = new Movement(position, endSquare);
+
+					if (Rules.MoveObeysRules(board, testMove, Owner)) {
+						if (result == null) {
+							result = new Dictionary<(Square, Square), Movement>();
+						}
+
+						result[(testMove.Start, testMove.End)] = new Movement(testMove);
+					}
+					
+					if (board.IsOccupiedAt(endSquare)) {
+						break;
+					}
+
+					endSquare += offset;
+				}
+			}
+
+			return result;
+		}
+	}
+}

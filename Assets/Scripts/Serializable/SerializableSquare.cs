@@ -1,25 +1,48 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityChess;
 using UnityEngine;
 
+/// <summary>
+/// A simple struct that Unity's JsonUtility can serialize.
+/// It can convert to/from your custom Square class.
+/// </summary>
+[System.Serializable]
 public struct SerializableSquare : INetworkSerializable
-{
 
-    public int File;
-    public int Rank;
-    // Implement the NetworkSerialize method
-    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+{
+    public int file;
+    public int rank;
+
+    public SerializableSquare(int file, int rank)
     {
-        serializer.SerializeValue(ref File);
-        serializer.SerializeValue(ref Rank);
+        this.file = file;
+        this.rank = rank;
     }
 
+    /// <summary>
+    /// Convert this serializable struct back into the engine’s Square object.
+    /// </summary>
+    public Square ToSquare()
+    {
+        return new Square(file, rank);
+    }
 
+    /// <summary>
+    /// Convert from the engine’s Square to this serializable struct.
+    /// </summary>
+    public static SerializableSquare FromSquare(Square square)
+    {
+        return new SerializableSquare(square.File, square.Rank);
+    }
 
-    // Convert to/from the library's Square
-    public static SerializableSquare FromSquare(Square square) => new SerializableSquare { File = square.File, Rank = square.Rank };
-    public Square ToSquare() => new Square(File, Rank);
+    public override string ToString() => $"({file}, {rank})";
 
+    /// <summary>
+    /// NGO calls this to read/write the data.
+    /// </summary>
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref file);
+        serializer.SerializeValue(ref rank);
+    }
 }

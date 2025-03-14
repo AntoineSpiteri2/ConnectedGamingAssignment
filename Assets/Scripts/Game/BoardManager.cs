@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityChess;
 using UnityEngine;
 using static UnityChess.SquareUtil;
@@ -159,8 +160,16 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         VisualPiece visualPiece = positionMap[position].GetComponentInChildren<VisualPiece>();
         // If a VisualPiece is found, destroy its GameObject immediately.
         if (visualPiece != null)
+        {
             //DestroyImmediate(visualPiece.gameObject);
-            DestroyImmediate(visualPiece.gameObject);
+            NetworkObject networkObject = visualPiece.GetComponent<NetworkObject>();
+            if (networkObject != null && networkObject.IsSpawned)
+            {
+                ulong objectId = networkObject.NetworkObjectId;
+
+                GameManager.Instance.DestoryPieceServerRpc(objectId);
+            }
+        }
 
     }
 

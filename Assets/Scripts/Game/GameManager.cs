@@ -186,21 +186,25 @@ public class GameManager : NetworkBehaviour
     /// Serialises the current game state using the selected serialization format.
     /// </summary>
     /// <returns>A string representing the serialised game state.</returns>
+      #region Simple Save/Load of entire game
+
     public string SerializeGame()
     {
-        return serializersByType.TryGetValue(selectedSerializationType, out IGameSerializer serializer)
-            ? serializer?.Serialize(game)
-            : null;
+        if (serializersByType.TryGetValue(selectedSerializationType, out IGameSerializer serializer))
+        {
+            return serializer.Serialize(game);
+        }
+        return null;
     }
 
-    /// <summary>
-    /// Loads a game from the given serialised game state string.
-    /// </summary>
-    /// <param name="serializedGame">The serialised game state string.</param>
-    public void LoadGame(string serializedGame)
+    public void LoadGame(string serialized)
     {
-        game = serializersByType[selectedSerializationType].Deserialize(serializedGame);
-        NewGameStartedEvent?.Invoke();
+        if (!string.IsNullOrEmpty(serialized) &&
+            serializersByType.TryGetValue(selectedSerializationType, out IGameSerializer serializer))
+        {
+            game = serializer.Deserialize(serialized);
+            NewGameStartedEvent?.Invoke();
+        }
     }
 
     /// <summary>
@@ -226,32 +230,22 @@ public class GameManager : NetworkBehaviour
     /// <returns>True if the move was successfully executed; otherwise, false.</returns>
     private bool TryExecuteMove(Movement move)
     {
-        // Attempt to execute the move within the game logic.
-        if (!game.TryExecuteMove(move))
-        {
-            return false;
-        }
+        if (!game.TryExecuteMove(move)) return false;
 
-        // Retrieve the latest half-move from the timeline.
+        // Check if that caused checkmate or stalemate
         HalfMoveTimeline.TryGetCurrent(out HalfMove latestHalfMove);
-
-        // If the latest move resulted in checkmate or stalemate, disable further moves.
         if (latestHalfMove.CausedCheckmate || latestHalfMove.CausedStalemate)
         {
-            BoardManager.Instance.SetActiveAllPieces(false);
+            // Possibly broadcast game end
             GameEndedEvent?.Invoke();
         }
-        else
-        {
-            // Otherwise, ensure that only the pieces of the side to move are enabled.
-            BoardManager.Instance.EnsureOnlyPiecesOfSideAreEnabled(SideToMove);
-        }
 
-        // Signal that a move has been executed.
         MoveExecutedEvent?.Invoke();
-
+        // Switch side to move
+        SideToMove = (SideToMove == Side.White) ? Side.Black : Side.White;
         return true;
     }
+
 
     /// <summary>
     /// Handles special move behaviour asynchronously (castling, en passant, and promotion).
@@ -386,17 +380,21 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    private void OnPieceMoved(Square movedPieceInitialSquare,
+    private void OnPieceMoved(Square startSquare,
                          Transform movedPieceTransform,
-                         Transform closestBoardSquareTransform,
-                         Piece promotionPiece = null)
+                         Transform droppedSquareTransform,
+                         Piece promotionPiece )
     {
-
-
-        MoveDTO moveData = new MoveDTO(movedPieceInitialSquare, movedPieceTransform, closestBoardSquareTransform, promotionPiece);
+        MoveDTO moveDTO = new MoveDTO
+        {
+            initialSquare = new SerializableSquare(startSquare.File, startSquare.Rank),
+            pieceTransformName = movedPieceTransform.name,
+            destinationSquareTransformName = droppedSquareTransform.name,
+            promotionPieceType = promotionPiece != null ? promotionPiece.GetType().Name : null
+        };
 
         // Convert move data to JSON
-        string moveJson = JsonUtility.ToJson(moveData);
+        string moveJson = JsonUtility.ToJson(moveDTO);
 
 
         // Immediately request server validation
@@ -474,7 +472,8 @@ public class GameManager : NetworkBehaviour
     private void OnClientDisconnected(ulong clientId)
     {
         connectedPlayers.Remove(clientId);
-        Debug.Log($"Player {clientId} disconnected. Remaining Players: {connectedPlayers.Count}");
+        Debug.Log($"[Server] Player {clientId} disconnected.");
+
 
 
 
@@ -525,9 +524,28 @@ public class GameManager : NetworkBehaviour
 
     private void ResetGame()
     {
-        isWhiteTurn = true;
-        Debug.Log("Game has been reset.");
+        Debug.Log("[Server] Resetting game...");
+        StartNewGame();
+        destroyedPieces.Clear();
+        gameStarted = false;
     }
+
+    /// <summary>
+    /// Return an ElectedPiece enum from the name "Queen", "Knight", etc.
+    /// For simpler logic, you can also map those piece names directly.
+    /// </summary>
+    private ElectedPiece ConvertElectedPieceType(string pieceTypeName)
+    {
+        return pieceTypeName switch
+        {
+            "Queen" => ElectedPiece.Queen,
+            "Rook" => ElectedPiece.Rook,
+            "Bishop" => ElectedPiece.Bishop,
+            "Knight" => ElectedPiece.Knight,
+            _ => ElectedPiece.Queen // fallback
+        };
+    }
+
 
     /// <summary>
     /// Ends the current turn and updates all clients.
@@ -597,108 +615,172 @@ public class GameManager : NetworkBehaviour
     {
         Debug.Log($"[SERVER] Received move JSON: {moveJson}");
 
-        game.ConditionsTimeline.TryGetCurrent(out GameConditions currentConditions);
-        Debug.Log($"[SERVER] SideToMove before move: {currentConditions.SideToMove}");
 
-
-
-        // Deserialize the JSON into a MoveDTO.
         MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(moveJson);
-        Debug.Log("Server Board FEN: " + new FENSerializer().Serialize(game)); // to check game synco
-
-
-        // Convert the initial square data back to a Square.
-        Square initialSquare = moveData.initialSquare.ToSquare();
-
-        //// For Transforms, find the GameObject by name and get its Transform.
-        //GameObject startObject = GameObject.Find(moveData.startTransform.name);
-        //Transform startTransform = (startObject != null) ? startObject.transform : null;
-
-        GameObject endObject = GameObject.Find(moveData.endTransform.name);
-        Transform endTransform = (endObject != null) ? endObject.transform : null;
-
-        // For the promotion piece, if data exists, create the appropriate Piece.
-      
-
-        Square endSquare = new Square(endTransform.name);
-
-
-
-        if (!game.TryGetLegalMove(initialSquare, endSquare, out Movement move))
+        Square startSquare = moveData.initialSquare.ToSquare();
+        GameObject endObj = GameObject.Find(moveData.destinationSquareTransformName);
+        if (!endObj)
         {
-            Debug.Log("[SERVER] Move rejected by game logic.");
-            Debug.Log($"[SERVER] Move from {initialSquare} to {endSquare} rejected. ");
-            Debug.Log(game.TryGetLegalMove(initialSquare, endSquare, out Movement move_));
+            Debug.LogWarning("[Server] Destination transform not found. Rejecting move.");
             RejectMoveClientRpc(moveJson);
+            return;
         }
-        //else if (move is PromotionMove promotionMove)
-        //{
-        //    HandleSpecialMoveClientRpc(promotionPiece, promotionMove);
+        Square endSquare = new Square(endObj.name);
 
-        //}
-        else if ((move is not SpecialMove specialMove || await TryHandleSpecialMoveBehaviourAsync(specialMove)) && TryExecuteMove(move))//(await TryHandleSpecialMoveBehaviourAsync(specialMove) &&
+
+
+
+         // Attempt to retrieve a valid move
+        if (!game.TryGetLegalMove(startSquare, endSquare, out Movement move))
         {
-            Debug.Log("[SERVER] Move validated and executed.");
-            ValidateAndExecuteMoveClientRpc(moveJson);
-        } else
+            Debug.LogWarning("[Server] Move was invalid according to the chess logic. Rejecting...");
+            RejectMoveClientRpc(moveJson);
+            return;
+        }
+
+        PromotionMove promoMove = move as PromotionMove;
+        // If the move is a PromotionMove, set the promotion piece if provided in the DTO
+        if (move is PromotionMove promoMove_)
+        {
+            if (!string.IsNullOrEmpty(moveData.promotionPieceType))
+            {
+                // We have some piece type from the client
+                Piece finalPiece = PromotionUtil.GeneratePromotionPiece(
+                    ConvertElectedPieceType(moveData.promotionPieceType),
+                    SideToMove
+                );
+                promoMove.SetPromotionPiece(finalPiece);
+            }
+            // else if no piece was provided, you might do something else
+        }
+        // Handle special moves
+        if (promoMove is SpecialMove specialMove)
         {
 
-            Debug.Log("[SERVER] Special move not executed.");
+            // We'll do the special move logic here on the server
+            if (!TryHandleSpecialMoveBehaviourServer(specialMove))
+            {
+                Debug.LogWarning("[Server] Special Move handling failed. Rejecting...");
+                RejectMoveClientRpc(moveJson);
+                return;
+            }
+        }
 
+        // Attempt to execute the move within the chess logic
+        if (!TryExecuteMove(move))
+        {
+            Debug.LogWarning("[Server] Move could not be executed. Rejecting...");
+            RejectMoveClientRpc(moveJson);
+            return;
+        }
+
+        // Move was successful, broadcast to all clients
+        ValidateAndExecuteMoveClientRpc(moveJson);
+    }
+
+
+    /// <summary>
+    /// “Server” version that handles castling/en passant/promotion visual logic and
+    /// also modifies the shared 'destroyedPieces' if we capture something.
+    /// </summary>
+    /// </summary>
+    private bool TryHandleSpecialMoveBehaviourServer(SpecialMove specialMove)
+    {
+        switch (specialMove)
+        {
+            case CastlingMove castlingMove:
+                // Rook is effectively “moved” from its start square to rook-end
+                return true;
+
+            case EnPassantMove epMove:
+                SerializableSquare capturedPawnSquare = SerializableSquare.FromSquare(epMove.CapturedPawnSquare) ;
+                destroyedPieces.Add(capturedPawnSquare);
+                return true;
+
+            case PromotionMove promoMove:
+                // If the piece is not yet assigned, the client must provide it (or we pick default).
+                if (promoMove.PromotionPiece == null)
+                {
+                    // If still null, we can’t do the move yet. Could queue or reject.
+                    return false;
+                }
+                // Otherwise, this is basically a normal move plus piece replacement.
+                return true;
+
+            default:
+                return false;
         }
     }
 
 
 
-
-
-    [ClientRpc] //string start, string end, string mov
+    [ClientRpc]
     private void ValidateAndExecuteMoveClientRpc(string moveJson)
     {
         MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(moveJson);
 
-        //// For Transforms, find the GameObject by name and get its Transform.
-        GameObject startObject = GameObject.Find(moveData.startTransform.name);
-        Transform startTransform = (startObject != null) ? startObject.transform : null;
+        // In singleplayer code, we’d do BoardManager logic directly here
+        // But we must be careful: the server side already changed the “game” state,
+        // so we just do the visuals.
 
-        GameObject endObject = GameObject.Find(moveData.endTransform.name);
-        Transform endTransform = (endObject != null) ? endObject.transform : null;
-
-        Piece promotionPiece = null;
-        if (moveData.promotionPiece != null)
+        GameObject pieceObj = GameObject.Find(moveData.pieceTransformName);
+        if (!pieceObj)
         {
-            promotionPiece = PieceFactory.CreatePiece(moveData.promotionPiece.pieceType);
+            Debug.LogWarning("[Client] Could not find piece to move. Possibly out of sync?");
+            return;
         }
 
-        //// For non-special moves, update the board visuals by destroying any piece at the destination.
-        //if (move is not SpecialMove) { BoardManager.Instance.TryDestroyVisualPiece(startTransform); }
+        GameObject endObj = GameObject.Find(moveData.destinationSquareTransformName);
+        if (!endObj)
+        {
+            Debug.LogWarning("[Client] Could not find end transform. Possibly out of sync?");
+            return;
+        }
 
-        //// For promotion moves, update the moved piece transform to the newly created visual piece.
-        //if (move is PromotionMove)
-        //{
-        //    start = BoardManager.Instance.GetPieceGOAtPosition(move.End).transform;
-        //}
+        // If anything was on the end square, remove it (capture).
+        Square endSquare = new Square(endObj.name);
+        BoardManager.Instance.TryDestroyVisualPiece(endSquare);
 
-        // Re-parent the moved piece to the destination square and update its position.
-        startTransform.parent = endTransform;
-        startTransform.position = endTransform.position;
+        // If this was a promotion, the server side logic replaced the piece in “game”,
+        // so we can reflect that visually:
+        //   1) Destroy the original piece’s GO
+        //   2) Create the new piece
+        //   3) Move it
+
+        // Check if we had a promotion piece
+        if (!string.IsNullOrEmpty(moveData.promotionPieceType))
+        {
+            // Destroy old piece
+            BoardManager.Instance.TryDestroyVisualPiece(new Square(pieceObj.transform.parent.name));
+            // Rebuild the newly promoted piece
+            Piece newPiece = PromotionUtil.GeneratePromotionPiece(
+                ConvertElectedPieceType(moveData.promotionPieceType),
+                SideToMove
+            );
+            BoardManager.Instance.CreateAndPlacePieceGO(newPiece, endSquare);
+        }
+        else
+        {
+            // Normal or Special Move: just re-parent the piece
+            pieceObj.transform.SetParent(endObj.transform);
+            pieceObj.transform.position = endObj.transform.position;
+        }
         EndTurn();
-
+        // Also update local UI, turn indicators, etc.
+        UIManager.Instance.ValidateIndicators();
     }
 
 
     [ClientRpc] // start startSquare
     private void RejectMoveClientRpc(string JASON)
     {
-
         MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(JASON);
 
-        //// For Transforms, find the GameObject by name and get its Transform.
-        GameObject startObject = GameObject.Find(moveData.startTransform.name);
-        Transform startTransform = (startObject != null) ? startObject.transform : null;
+        GameObject pieceObj = GameObject.Find(moveData.pieceTransformName);
+        if (!pieceObj) return;
 
-
-        startTransform.position = startTransform.parent.position;
+        // Snap piece back to its parent square’s position
+        pieceObj.transform.position = pieceObj.transform.parent.position;
     }
 
     //[ClientRpc]
@@ -707,6 +789,18 @@ public class GameManager : NetworkBehaviour
     //    promotionMove.SetPromotionPiece(piece.ToPiece());
     //    EndTurn();
     //}
+
+
+    [ServerRpc(RequireOwnership = false)]
+    public void DestoryPieceServerRpc(ulong networkObjectId)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(networkObjectId, out NetworkObject netObj))
+        {
+            netObj.Despawn();
+        }
+    }
+
+
 
 
 }
@@ -718,4 +812,4 @@ public class GameManager : NetworkBehaviour
 
 
 
-
+#endregion
