@@ -147,6 +147,11 @@ public class GameManager : NetworkBehaviour
     // Currently selected serialization type (default is FEN).
     private GameSerializationType selectedSerializationType = GameSerializationType.FEN;
 
+
+
+    // Used to store partial promotion moves while we wait for the client to pick a piece.
+    private readonly Dictionary<Square, PromotionMove> pendingPromotionMoves = new Dictionary<Square, PromotionMove>();
+
     /// <summary>
     /// Unity's Start method initialises the game and sets up event handlers.
     /// </summary>
@@ -252,63 +257,63 @@ public class GameManager : NetworkBehaviour
     /// </summary>
     /// <param name="specialMove">The special move to process.</param>
     /// <returns>A task that resolves to true if the special move was handled; otherwise, false.</returns>
-    public async Task<bool> TryHandleSpecialMoveBehaviourAsync(SpecialMove specialMove)
-    {
-        switch (specialMove)
-        {
-            // Handle castling move.
-            case CastlingMove castlingMove:
-                BoardManager.Instance.CastleRook(castlingMove.RookSquare, castlingMove.GetRookEndSquare());
-                return true;
-            // Handle en passant move.
-            case EnPassantMove enPassantMove:
-                BoardManager.Instance.TryDestroyVisualPiece(enPassantMove.CapturedPawnSquare);
-                return true;
-            // Handle promotion move when no promotion piece has been selected yet.
-            case PromotionMove { PromotionPiece: null } promotionMove:
-                // Activate the promotion UI and disable all pieces.
-                UIManager.Instance.SetActivePromotionUI(true);
-                BoardManager.Instance.SetActiveAllPieces(false);
+    //public async Task<bool> TryHandleSpecialMoveBehaviourAsync(SpecialMove specialMove)
+    //{
+    //    switch (specialMove)
+    //    {
+    //        // Handle castling move.
+    //        case CastlingMove castlingMove:
+    //            BoardManager.Instance.CastleRook(castlingMove.RookSquare, castlingMove.GetRookEndSquare());
+    //            return true;
+    //        // Handle en passant move.
+    //        case EnPassantMove enPassantMove:
+    //            BoardManager.Instance.TryDestroyVisualPiece(enPassantMove.CapturedPawnSquare);
+    //            return true;
+    //        // Handle promotion move when no promotion piece has been selected yet.
+    //        case PromotionMove { PromotionPiece: null } promotionMove:
+    //            // Activate the promotion UI and disable all pieces.
+    //            UIManager.Instance.SetActivePromotionUI(true);
+    //            BoardManager.Instance.SetActiveAllPieces(false);
 
-                // Cancel any pending promotion UI tasks.
-                promotionUITaskCancellationTokenSource?.Cancel();
-                promotionUITaskCancellationTokenSource = new CancellationTokenSource();
+    //            // Cancel any pending promotion UI tasks.
+    //            promotionUITaskCancellationTokenSource?.Cancel();
+    //            promotionUITaskCancellationTokenSource = new CancellationTokenSource();
 
-                // Await user's promotion choice asynchronously.
-                ElectedPiece choice = await Task.Run(GetUserPromotionPieceChoice, promotionUITaskCancellationTokenSource.Token);
+    //            // Await user's promotion choice asynchronously.
+    //            ElectedPiece choice = await Task.Run(GetUserPromotionPieceChoice, promotionUITaskCancellationTokenSource.Token);
 
-                // Deactivate the promotion UI and re-enable all pieces.
-                UIManager.Instance.SetActivePromotionUI(false);
-                BoardManager.Instance.SetActiveAllPieces(true);
+    //            // Deactivate the promotion UI and re-enable all pieces.
+    //            UIManager.Instance.SetActivePromotionUI(false);
+    //            BoardManager.Instance.SetActiveAllPieces(true);
 
-                // If the task was cancelled, return false.
-                if (promotionUITaskCancellationTokenSource == null
-                    || promotionUITaskCancellationTokenSource.Token.IsCancellationRequested
-                ) { return false; }
+    //            // If the task was cancelled, return false.
+    //            if (promotionUITaskCancellationTokenSource == null
+    //                || promotionUITaskCancellationTokenSource.Token.IsCancellationRequested
+    //            ) { return false; }
 
-                // Set the chosen promotion piece.
-                promotionMove.SetPromotionPiece(
-                    PromotionUtil.GeneratePromotionPiece(choice, SideToMove)
-                );
-                // Update the board visuals for the promotion.
-                BoardManager.Instance.TryDestroyVisualPiece(promotionMove.Start);
-                BoardManager.Instance.TryDestroyVisualPiece(promotionMove.End);
-                BoardManager.Instance.CreateAndPlacePieceGO(promotionMove.PromotionPiece, promotionMove.End);
+    //            // Set the chosen promotion piece.
+    //            promotionMove.SetPromotionPiece(
+    //                PromotionUtil.GeneratePromotionPiece(choice, SideToMove)
+    //            );
+    //            // Update the board visuals for the promotion.
+    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.Start);
+    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.End);
+    //            BoardManager.Instance.CreateAndPlacePieceGO(promotionMove.PromotionPiece, promotionMove.End);
 
-                promotionUITaskCancellationTokenSource = null;
-                return true;
-            // Handle promotion move when the promotion piece is already set.
-            case PromotionMove promotionMove:
-                BoardManager.Instance.TryDestroyVisualPiece(promotionMove.Start);
-                BoardManager.Instance.TryDestroyVisualPiece(promotionMove.End);
-                BoardManager.Instance.CreateAndPlacePieceGO(promotionMove.PromotionPiece, promotionMove.End);
+    //            promotionUITaskCancellationTokenSource = null;
+    //            return true;
+    //        // Handle promotion move when the promotion piece is already set.
+    //        case PromotionMove promotionMove:
+    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.Start);
+    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.End);
+    //            BoardManager.Instance.CreateAndPlacePieceGO(promotionMove.PromotionPiece, promotionMove.End);
 
-                return true;
-            // Default case: if the special move is not recognised.
-            default:
-                return false;
-        }
-    }
+    //            return true;
+    //        // Default case: if the special move is not recognised.
+    //        default:
+    //            return false;
+    //    }
+    //}
 
     /// <summary>
     /// Blocks until the user selects a piece for pawn promotion.
@@ -383,7 +388,7 @@ public class GameManager : NetworkBehaviour
     private void OnPieceMoved(Square startSquare,
                          Transform movedPieceTransform,
                          Transform droppedSquareTransform,
-                         Piece promotionPiece )
+                         Piece promotionPiece)
     {
         MoveDTO moveDTO = new MoveDTO
         {
@@ -396,9 +401,11 @@ public class GameManager : NetworkBehaviour
         // Convert move data to JSON
         string moveJson = JsonUtility.ToJson(moveDTO);
 
+        // Get the local client ID
+        ulong clientId = NetworkManager.Singleton.LocalClientId;
 
         // Immediately request server validation
-        RequestMoveValidationServerRpc(moveJson);
+        RequestMoveValidationServerRpc(moveJson, clientId);
     }
 
 
@@ -611,7 +618,7 @@ public class GameManager : NetworkBehaviour
 
 
     [ServerRpc(RequireOwnership = false)]
-    public    void RequestMoveValidationServerRpc(string moveJson)
+    public    void RequestMoveValidationServerRpc(string moveJson, ulong clientid)
     {
         Debug.Log($"[SERVER] Received move JSON: {moveJson}");
 
@@ -656,14 +663,31 @@ public class GameManager : NetworkBehaviour
         // Handle special moves
         if (promoMove is SpecialMove specialMove)
         {
+            // We have a promotion move with no piece set -> we must ask the client
+            Debug.Log($"[Server] Received PromotionMove for {startSquare}->{endSquare}, but no piece chosen yet.");
 
-            // We'll do the special move logic here on the server
-            if (!TryHandleSpecialMoveBehaviourServer(specialMove))
+            // Store it so we can finalize later once the client picks
+            pendingPromotionMoves[startSquare] = promoMove;
+
+            ClientRpcParams targetSender = new ClientRpcParams
             {
-                Debug.LogWarning("[Server] Special Move handling failed. Rejecting...");
-                RejectMoveClientRpc(moveJson);
-                return;
-            }
+                Send = new ClientRpcSendParams { TargetClientIds = new[] { clientid } }
+            };
+
+
+            AskPromotionChoiceClientRpc(moveJson, targetSender);
+
+            // Return here so we do NOT finalize the move yet
+            return;
+
+
+        }
+
+        if (move is SpecialMove specialMove_ && !TryHandleSpecialMoveBehaviourServer(specialMove_))
+        {
+            Debug.LogWarning("[Server] Special move handling failed. Rejecting...");
+            RejectMoveClientRpc(moveJson);
+            return;
         }
 
         // Attempt to execute the move within the chess logic
@@ -723,6 +747,10 @@ public class GameManager : NetworkBehaviour
         // But we must be careful: the server side already changed the “game” state,
         // so we just do the visuals.
 
+        Square startSquare = moveData.initialSquare.ToSquare();
+
+        Piece piece = CurrentBoard[startSquare];
+
         GameObject pieceObj = GameObject.Find(moveData.pieceTransformName);
         if (!pieceObj)
         {
@@ -741,6 +769,7 @@ public class GameManager : NetworkBehaviour
         Square endSquare = new Square(endObj.name);
         BoardManager.Instance.TryDestroyVisualPiece(endSquare);
 
+
         // If this was a promotion, the server side logic replaced the piece in “game”,
         // so we can reflect that visually:
         //   1) Destroy the original piece’s GO
@@ -751,13 +780,19 @@ public class GameManager : NetworkBehaviour
         if (!string.IsNullOrEmpty(moveData.promotionPieceType))
         {
             // Destroy old piece
-            BoardManager.Instance.TryDestroyVisualPiece(new Square(pieceObj.transform.parent.name));
+            BoardManager.Instance.TryDestroyVisualPiece(startSquare);
+            BoardManager.Instance.TryDestroyVisualPiece(endSquare);
+
+            Debug.Log("spawning a piece!");
             // Rebuild the newly promoted piece
             Piece newPiece = PromotionUtil.GeneratePromotionPiece(
                 ConvertElectedPieceType(moveData.promotionPieceType),
                 SideToMove
             );
             BoardManager.Instance.CreateAndPlacePieceGO(newPiece, endSquare);
+
+            //BoardManager.Instance.TryDestroyVisualPiece(startSquare);  // old piece
+            //BoardManager.Instance.CreateAndPlacePieceGO(piece, endSquare);
         }
         else
         {
@@ -770,6 +805,9 @@ public class GameManager : NetworkBehaviour
         UIManager.Instance.ValidateIndicators();
     }
 
+
+
+ 
 
     [ClientRpc] // start startSquare
     private void RejectMoveClientRpc(string JASON)
@@ -800,7 +838,89 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    private  void  AskPromotionChoiceClientRpc(string moveJson, ClientRpcParams clientRpcParams = default)
+    {
+        UIManager.Instance.SetActivePromotionUI(true);
+        BoardManager.Instance.SetActiveAllPieces(false);
 
+        // Cancel any pending promotion UI tasks.
+        promotionUITaskCancellationTokenSource?.Cancel();
+        promotionUITaskCancellationTokenSource = new CancellationTokenSource();
+
+        Debug.Log("[Client] The server wants us to pick a promotion piece!");
+
+        HandlePromotionChoiceAsync(moveJson);
+
+    }
+
+
+    private async void HandlePromotionChoiceAsync(string moveJson)
+    {
+        Debug.Log("[Client] The server wants us to pick a promotion piece!");
+
+        // Await the asynchronous user input (e.g., promotion piece selection).
+        ElectedPiece choice = await Task.Run(GetUserPromotionPieceChoice, promotionUITaskCancellationTokenSource.Token);
+
+        // Deactivate the promotion UI and re-enable all pieces.
+        UIManager.Instance.SetActivePromotionUI(false);
+        BoardManager.Instance.SetActiveAllPieces(true);
+
+        string chosenPieceType = choice.ToString();
+        SubmitPromotionChoiceServerRpc(moveJson, chosenPieceType);
+    }
+
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SubmitPromotionChoiceServerRpc(string moveJson, string chosenPieceType, ServerRpcParams rpcParams = default)
+    {
+        // 1) Parse the same data
+        MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(moveJson);
+        Square startSquare = moveData.initialSquare.ToSquare();
+
+
+        // 2) Retrieve our partial PromotionMove from the dictionary
+        if (!pendingPromotionMoves.TryGetValue(startSquare, out PromotionMove promoMove))
+        {
+            Debug.LogWarning("[Server] No pending promotion move found for " + startSquare);
+            RejectMoveClientRpc(moveJson);
+            return;
+        }
+
+        // 3) Set the piece now that the user has chosen
+        Piece finalPiece = PromotionUtil.GeneratePromotionPiece(
+            ConvertElectedPieceType(chosenPieceType),
+            SideToMove
+        );
+        promoMove.SetPromotionPiece(finalPiece);
+
+        // Done with the pending entry
+        pendingPromotionMoves.Remove(startSquare);
+
+        // 4) Now handle special moves if needed
+        if (!TryHandleSpecialMoveBehaviourServer(promoMove))
+        {
+            Debug.LogWarning("[Server] special move handling failed for promotion. Rejecting...");
+            RejectMoveClientRpc(moveJson);
+            return;
+        }
+
+        // 5) Attempt to finalize
+        if (!TryExecuteMove(promoMove))
+        {
+            Debug.LogWarning("[Server] Move could not be executed. Rejecting...");
+            RejectMoveClientRpc(moveJson);
+            return;
+        }
+
+        // 6) Because it’s a final promotion, we must update the “moveJson” so that “promotionPieceType”
+        // is no longer empty. Then we pass that back to the clients for visuals.
+        moveData.promotionPieceType = chosenPieceType;
+        string finalJson = JsonUtility.ToJson(moveData);
+
+        // 7) Let everyone do the final visuals
+        ValidateAndExecuteMoveClientRpc(finalJson);
+    }
 
 
 }

@@ -180,17 +180,17 @@ public class VisualPiece : MonoBehaviour
             Piece piece = GameManager.Instance.CurrentBoard[CurrentSquare];
             Square destinationSquare = StringToSquare(closestSquareTransform.name);
 
-            if (piece is Pawn && (destinationSquare.Rank == 8 || destinationSquare.Rank == 1))
-            {
-                ShowMneu(closestSquareTransform);
+            //if (piece is Pawn && (destinationSquare.Rank == 8 || destinationSquare.Rank == 1))
+            //{
+            //    ShowMneu(closestSquareTransform);
                
 
 
 
 
-            }
-            else
-            {
+            //}
+            //else
+            //{
                 VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
 
                 // Re-enable Network Transform after move is finished
@@ -199,7 +199,7 @@ public class VisualPiece : MonoBehaviour
                 {
                     netTransform.enabled = true;
                 }
-            }
+            //}
 
 
 
@@ -211,41 +211,41 @@ public class VisualPiece : MonoBehaviour
 
     }
 
-    public async Task ShowMneu(Transform closestSquareTransform)
-    {
-        Square startSquare = CurrentSquare;
-        Square endSquare = StringToSquare(closestSquareTransform.name);
+    //public async Task ShowMneu(Transform closestSquareTransform)
+    //{
+    //    Square startSquare = CurrentSquare;
+    //    Square endSquare = StringToSquare(closestSquareTransform.name);
 
-        if (GameManager.Instance.game.TryGetLegalMove(startSquare, endSquare, out Movement move))
-        {
+    //    if (GameManager.Instance.game.TryGetLegalMove(startSquare, endSquare, out Movement move))
+    //    {
 
-            if ((move is not SpecialMove specialMove || await GameManager.Instance.TryHandleSpecialMoveBehaviourAsync(specialMove)))
-            {
-                VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+    //        if ((move is not SpecialMove specialMove || await GameManager.Instance.TryHandleSpecialMoveBehaviourAsync(specialMove)))
+    //        {
+    //            VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
 
-                // Re-enable Network Transform after move is finished
-                NetworkTransform netTransform = GetComponent<NetworkTransform>();
-                if (netTransform != null)
-                {
-                    netTransform.enabled = true;
-                }
-            }
-            else
-            {
-                VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+    //            // Re-enable Network Transform after move is finished
+    //            NetworkTransform netTransform = GetComponent<NetworkTransform>();
+    //            if (netTransform != null)
+    //            {
+    //                netTransform.enabled = true;
+    //            }
+    //        }
+    //        else
+    //        {
+    //            VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
 
-                // Re-enable Network Transform after move is finished
-                NetworkTransform netTransform = GetComponent<NetworkTransform>();
-                if (netTransform != null)
-                {
-                    netTransform.enabled = true;
-                }
-            }
+    //            // Re-enable Network Transform after move is finished
+    //            NetworkTransform netTransform = GetComponent<NetworkTransform>();
+    //            if (netTransform != null)
+    //            {
+    //                netTransform.enabled = true;
+    //            }
+    //        }
 
 
-        }
+    //    }
 
-    }
+    //}
 
 
 }

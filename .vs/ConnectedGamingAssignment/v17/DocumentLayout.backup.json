@@ -3,29 +3,27 @@
   "WorkspaceRootPath": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\assets\\scripts\\game\\boardmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\boardmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\assets\\scripts\\game\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C69547B9-DDEB-064C-6342-020E2AE2F572}|Unity.Netcode.Runtime.csproj|c:\\users\\anthr\\documents\\unitychess\\connectedgamingassignment\\library\\packagecache\\com.unity.netcode.gameobjects@1.5.2\\runtime\\messaging\\messages\\rpcmessages.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C69547B9-DDEB-064C-6342-020E2AE2F572}|Unity.Netcode.Runtime.csproj|solutionrelative:library\\packagecache\\com.unity.netcode.gameobjects@1.5.2\\runtime\\messaging\\messages\\rpcmessages.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|c:\\users\\anthr\\documents\\unitychess\\connectedgamingassignment\\assets\\scripts\\game\\visualpiece.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\visualpiece.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\assets\\scripts\\game\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\gamemanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Anthr\\AppData\\Local\\Temp\\ca2f78ed-391b-4893-b5ab-eb1b85ccd270_UnityChess.zip.270\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Anthr\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\GameManager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Anthr\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\assets\\scripts\\game\\boardmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\game\\boardmanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\assets\\movementdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|solutionrelative:assets\\movementdata.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Anthr\\Downloads\\OrginalNonNetowrkGameManager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{40BB44D9-ACBE-E9EA-5C44-5C7EF67407C7}|Assembly-CSharp.csproj|C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\assets\\scripts\\networkui.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -59,75 +57,63 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "RpcMessages.cs",
+              "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Library\\PackageCache\\com.unity.netcode.gameobjects@1.5.2\\Runtime\\Messaging\\Messages\\RpcMessages.cs",
+              "RelativeDocumentMoniker": "Library\\PackageCache\\com.unity.netcode.gameobjects@1.5.2\\Runtime\\Messaging\\Messages\\RpcMessages.cs",
+              "ToolTip": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Library\\PackageCache\\com.unity.netcode.gameobjects@1.5.2\\Runtime\\Messaging\\Messages\\RpcMessages.cs",
+              "RelativeToolTip": "Library\\PackageCache\\com.unity.netcode.gameobjects@1.5.2\\Runtime\\Messaging\\Messages\\RpcMessages.cs",
+              "ViewState": "AgIAADAAAAAAAAAAAAAmwEkAAABSAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-15T03:28:07.367Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
               "Title": "VisualPiece.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Game\\VisualPiece.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\VisualPiece.cs",
               "ToolTip": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Game\\VisualPiece.cs",
               "RelativeToolTip": "Assets\\Scripts\\Game\\VisualPiece.cs",
-              "ViewState": "AgIAAGwAAAAAAAAAAAAQwHsAAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAAgAAAAAAAAAAAAcwBwAAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-14T18:27:50.759Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "GameManager.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Game\\GameManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\GameManager.cs",
               "ToolTip": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Game\\GameManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\Game\\GameManager.cs",
-              "ViewState": "AgIAABwDAAAAAAAAAAAAAJABAAAIAAAAAAAAAA==",
+              "ViewState": "AgIAAJcDAAAAAAAAAADgv68DAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-14T13:19:21.642Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "VisualPiece.cs",
-              "DocumentMoniker": "C:\\Users\\Anthr\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs",
-              "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs",
-              "ToolTip": "C:\\Users\\Anthr\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs",
-              "RelativeToolTip": "..\\..\\..\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs",
-              "ViewState": "AgIAAEgAAAAAAAAAAAAAAHIAAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-14T17:36:08.694Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "VisualPiece.cs",
-              "DocumentMoniker": "C:\\Users\\Anthr\\AppData\\Local\\Temp\\ca2f78ed-391b-4893-b5ab-eb1b85ccd270_UnityChess.zip.270\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs",
-              "RelativeDocumentMoniker": "..\\..\\..\\AppData\\Local\\Temp\\ca2f78ed-391b-4893-b5ab-eb1b85ccd270_UnityChess.zip.270\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs",
-              "ToolTip": "C:\\Users\\Anthr\\AppData\\Local\\Temp\\ca2f78ed-391b-4893-b5ab-eb1b85ccd270_UnityChess.zip.270\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs [Read Only]",
-              "RelativeToolTip": "..\\..\\..\\AppData\\Local\\Temp\\ca2f78ed-391b-4893-b5ab-eb1b85ccd270_UnityChess.zip.270\\UnityChess\\Assets\\Scripts\\Game\\VisualPiece.cs [Read Only]",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-14T17:06:29.408Z",
-              "EditorCaption": " [Read Only]"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
               "Title": "BoardManager.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Game\\BoardManager.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Game\\BoardManager.cs",
               "ToolTip": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Game\\BoardManager.cs",
               "RelativeToolTip": "Assets\\Scripts\\Game\\BoardManager.cs",
-              "ViewState": "AgIAAFkAAAAAAAAAAAAQwGsAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAFMAAAAAAAAAAAAqwHEAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-14T15:38:59.731Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 7,
               "Title": "SerializableSquare.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\Serializable\\SerializableSquare.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\Serializable\\SerializableSquare.cs",
@@ -140,7 +126,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 8,
               "Title": "MoveDTO.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\MoveDTO.cs",
               "RelativeDocumentMoniker": "Assets\\MoveDTO.cs",
@@ -153,7 +139,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 6,
               "Title": "NetworkUI.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\Scripts\\NetworkUI.cs",
               "RelativeDocumentMoniker": "Assets\\Scripts\\NetworkUI.cs",
@@ -166,7 +152,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 9,
               "Title": "TransformData.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\TransformData.cs",
               "RelativeDocumentMoniker": "Assets\\TransformData.cs",
@@ -179,7 +165,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 10,
               "Title": "SquareData.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\SquareData.cs",
               "RelativeDocumentMoniker": "Assets\\SquareData.cs",
@@ -192,7 +178,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
+              "DocumentIndex": 11,
               "Title": "pieceData.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\pieceData.cs",
               "RelativeDocumentMoniker": "Assets\\pieceData.cs",
@@ -205,13 +191,13 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 4,
               "Title": "MovementData.cs",
               "DocumentMoniker": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\MovementData.cs",
               "RelativeDocumentMoniker": "Assets\\MovementData.cs",
               "ToolTip": "C:\\Users\\Anthr\\Documents\\UnityChess\\ConnectedGamingAssignment\\Assets\\MovementData.cs",
               "RelativeToolTip": "Assets\\MovementData.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAxwAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-14T13:34:41.134Z",
               "EditorCaption": ""
@@ -224,10 +210,10 @@
       "Orientation": 0,
       "VerticalTabListWidth": 256,
       "FloatingWindowState": {
-        "Id": "57e0b015-6290-4903-9837-334d95bdc563",
+        "Id": "2202a599-3dcc-4431-a05f-1e3e691a5117",
         "Display": 1,
-        "X": 156,
-        "Y": 271,
+        "X": 299,
+        "Y": 170,
         "Width": 1626,
         "Height": 766,
         "WindowState": 0
@@ -239,15 +225,15 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "GameManager.cs",
-              "DocumentMoniker": "C:\\Users\\Anthr\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\GameManager.cs",
-              "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\GameManager.cs",
-              "ToolTip": "C:\\Users\\Anthr\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\GameManager.cs",
-              "RelativeToolTip": "..\\..\\..\\Downloads\\UnityChess\\UnityChess\\Assets\\Scripts\\Game\\GameManager.cs",
-              "ViewState": "AgIAAB0BAAAAAAAAAAAvwDsBAAAqAAAAAAAAAA==",
+              "DocumentIndex": 5,
+              "Title": "OrginalNonNetowrkGameManager.cs",
+              "DocumentMoniker": "C:\\Users\\Anthr\\Downloads\\OrginalNonNetowrkGameManager.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\Downloads\\OrginalNonNetowrkGameManager.cs",
+              "ToolTip": "C:\\Users\\Anthr\\Downloads\\OrginalNonNetowrkGameManager.cs",
+              "RelativeToolTip": "..\\..\\..\\Downloads\\OrginalNonNetowrkGameManager.cs",
+              "ViewState": "AgIAAMoAAAAAAAAAAAAuwPIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-14T18:41:55.802Z",
+              "WhenOpened": "2025-03-14T23:53:19.164Z",
               "EditorCaption": ""
             }
           ]
