@@ -85,8 +85,10 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		// Clear the move UI timeline.
 		moveUITimeline.Clear();
 
+		resultText.text = "Its White turn";
+
 		// Hide the result text (game outcome) since the game has just started.
-		resultText.gameObject.SetActive(false);
+		//resultText.gameObject.SetActive(false);
 	}
 
 	/// <summary>
@@ -105,7 +107,7 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		}
 
 		// Display the result text.
-		resultText.gameObject.SetActive(true);
+		//resultText.gameObject.SetActive(true);
 	}
 
 	/// <summary>
@@ -124,7 +126,18 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		// Retrieve the latest half-move and add it to the move history UI.
 		GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove lastMove);
 		AddMoveToHistory(lastMove, sideToMove.Complement());
-	}
+
+        // Check if the move caused check
+        if (lastMove.CausedCheck && !lastMove.CausedCheckmate)
+        {
+            resultText.text = $"{sideToMove} is in Check!";
+            resultText.gameObject.SetActive(true);
+        }
+        else if (!lastMove.CausedCheckmate && !lastMove.CausedStalemate)
+        {
+            //resultText.gameObject.SetActive(false); // hide if not in check
+        }
+    }
 
 	/// <summary>
 	/// Handles the event when the game is reset to a specific half-move.
@@ -293,9 +306,20 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
         whiteTurnIndicator.enabled = (sideToMove == Side.White);
         blackTurnIndicator.enabled = (sideToMove == Side.Black);
 
+
+
+
     }
 
 
+
+	public void UpdateBoardTurn(string text)
+	{
+
+        resultText.gameObject.GetComponent<Text>().text = text;
+
+
+    }
     /// <summary>
     /// Updates the game string input field with the current serialized game state.
     /// </summary>

@@ -242,7 +242,11 @@ public class GameManager : NetworkBehaviour
         if (latestHalfMove.CausedCheckmate || latestHalfMove.CausedStalemate)
         {
             // Possibly broadcast game end
-            GameEndedEvent?.Invoke();
+            bool isWhiteWin = latestHalfMove.CausedCheckmate && latestHalfMove.Piece.Owner == Side.White;
+            DeclareGameEndServerRpc(latestHalfMove.CausedCheckmate, isWhiteWin: isWhiteWin);
+
+
+
         }
 
         MoveExecutedEvent?.Invoke();
@@ -252,68 +256,6 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    /// <summary>
-    /// Handles special move behaviour asynchronously (castling, en passant, and promotion).
-    /// </summary>
-    /// <param name="specialMove">The special move to process.</param>
-    /// <returns>A task that resolves to true if the special move was handled; otherwise, false.</returns>
-    //public async Task<bool> TryHandleSpecialMoveBehaviourAsync(SpecialMove specialMove)
-    //{
-    //    switch (specialMove)
-    //    {
-    //        // Handle castling move.
-    //        case CastlingMove castlingMove:
-    //            BoardManager.Instance.CastleRook(castlingMove.RookSquare, castlingMove.GetRookEndSquare());
-    //            return true;
-    //        // Handle en passant move.
-    //        case EnPassantMove enPassantMove:
-    //            BoardManager.Instance.TryDestroyVisualPiece(enPassantMove.CapturedPawnSquare);
-    //            return true;
-    //        // Handle promotion move when no promotion piece has been selected yet.
-    //        case PromotionMove { PromotionPiece: null } promotionMove:
-    //            // Activate the promotion UI and disable all pieces.
-    //            UIManager.Instance.SetActivePromotionUI(true);
-    //            BoardManager.Instance.SetActiveAllPieces(false);
-
-    //            // Cancel any pending promotion UI tasks.
-    //            promotionUITaskCancellationTokenSource?.Cancel();
-    //            promotionUITaskCancellationTokenSource = new CancellationTokenSource();
-
-    //            // Await user's promotion choice asynchronously.
-    //            ElectedPiece choice = await Task.Run(GetUserPromotionPieceChoice, promotionUITaskCancellationTokenSource.Token);
-
-    //            // Deactivate the promotion UI and re-enable all pieces.
-    //            UIManager.Instance.SetActivePromotionUI(false);
-    //            BoardManager.Instance.SetActiveAllPieces(true);
-
-    //            // If the task was cancelled, return false.
-    //            if (promotionUITaskCancellationTokenSource == null
-    //                || promotionUITaskCancellationTokenSource.Token.IsCancellationRequested
-    //            ) { return false; }
-
-    //            // Set the chosen promotion piece.
-    //            promotionMove.SetPromotionPiece(
-    //                PromotionUtil.GeneratePromotionPiece(choice, SideToMove)
-    //            );
-    //            // Update the board visuals for the promotion.
-    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.Start);
-    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.End);
-    //            BoardManager.Instance.CreateAndPlacePieceGO(promotionMove.PromotionPiece, promotionMove.End);
-
-    //            promotionUITaskCancellationTokenSource = null;
-    //            return true;
-    //        // Handle promotion move when the promotion piece is already set.
-    //        case PromotionMove promotionMove:
-    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.Start);
-    //            BoardManager.Instance.TryDestroyVisualPiece(promotionMove.End);
-    //            BoardManager.Instance.CreateAndPlacePieceGO(promotionMove.PromotionPiece, promotionMove.End);
-
-    //            return true;
-    //        // Default case: if the special move is not recognised.
-    //        default:
-    //            return false;
-    //    }
-    //}
 
     /// <summary>
     /// Blocks until the user selects a piece for pawn promotion.
@@ -570,6 +512,14 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void UpdateTurnIndicatorClientRpc(bool whiteTurn)
     {
+        if (whiteTurn)
+        {
+            UIManager.Instance.UpdateBoardTurn("Its White turn");
+        }
+        else
+        {
+            UIManager.Instance.UpdateBoardTurn("Its Black turn");
+        }
         UIManager.Instance.ValidateIndicators();
     }
 
@@ -600,7 +550,7 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void DeclareGameEndServerRpc(bool isCheckmate, bool isWhiteWin)
     {
-        if (!IsServer) return;
+
         NotifyGameEndClientRpc(isCheckmate, isWhiteWin);
     }
 
@@ -611,7 +561,11 @@ public class GameManager : NetworkBehaviour
     private void NotifyGameEndClientRpc(bool isCheckmate, bool isWhiteWin)
     {
         string resultMessage = isCheckmate ? (isWhiteWin ? "White Wins!" : "Black Wins!") : "Draw!";
-        Debug.Log($"Game Over: {resultMessage}");
+
+        UIManager.Instance.UpdateBoardTurn(resultMessage);
+
+        BoardManager.Instance.SetActiveAllPieces(false);
+        GameEndedEvent?.Invoke();
     }
 
 
@@ -660,8 +614,10 @@ public class GameManager : NetworkBehaviour
             }
             // else if no piece was provided, you might do something else
         }
+
+        //int count = pendingPromotionMoves.Count;
         // Handle special moves
-        if (promoMove is SpecialMove specialMove)
+        if (promoMove is SpecialMove specialMove )
         {
             // We have a promotion move with no piece set -> we must ask the client
             Debug.Log($"[Server] Received PromotionMove for {startSquare}->{endSquare}, but no piece chosen yet.");
@@ -736,6 +692,19 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public bool TryDestroyVisualPieceByName(string pieceName)
+    {
+        GameObject pieceObj = GameObject.Find(pieceName);
+        if (pieceObj != null)
+        {
+            Debug.Log($"Destroying piece: {pieceName}");
+            Destroy(pieceObj);
+            return true;
+        }
+        Debug.LogWarning($"Could not find piece with name: {pieceName} to destroy.");
+        return false;
+    }
+
 
 
     [ClientRpc]
@@ -770,6 +739,7 @@ public class GameManager : NetworkBehaviour
         BoardManager.Instance.TryDestroyVisualPiece(endSquare);
 
 
+
         // If this was a promotion, the server side logic replaced the piece in “game”,
         // so we can reflect that visually:
         //   1) Destroy the original piece’s GO
@@ -790,6 +760,20 @@ public class GameManager : NetworkBehaviour
                 SideToMove
             );
             BoardManager.Instance.CreateAndPlacePieceGO(newPiece, endSquare);
+            GameObject newPieceGO = BoardManager.Instance.GetPieceGOAtPosition(endSquare);
+
+
+            GameObject endSquareGO = GameObject.Find(moveData.destinationSquareTransformName);
+            GameManager.Instance.CurrentBoard[endSquare] = newPiece;
+            //if (endSquareGO != null && newPieceGO != null)
+            //{
+            //    newPieceGO.transform.SetParent(endSquareGO.transform, true);
+            //}
+            //else
+            //{
+            //    Debug.LogWarning("[Client] Could not find board square for promotion or new piece is null.");
+            
+
 
             //BoardManager.Instance.TryDestroyVisualPiece(startSquare);  // old piece
             //BoardManager.Instance.CreateAndPlacePieceGO(piece, endSquare);
@@ -821,12 +805,11 @@ public class GameManager : NetworkBehaviour
         pieceObj.transform.position = pieceObj.transform.parent.position;
     }
 
-    //[ClientRpc]
-    //private void HandleSpecialMoveClientRpc(SerializablePiece piece, PromotionMove promotionMove)
-    //{
-    //    promotionMove.SetPromotionPiece(piece.ToPiece());
-    //    EndTurn();
-    //}
+    public void AddDestroyedPiece(Square position)
+    {
+        destroyedPieces.Add(new SerializableSquare(position.File, position.Rank));
+    }
+
 
 
     [ServerRpc(RequireOwnership = false)]
@@ -894,6 +877,7 @@ public class GameManager : NetworkBehaviour
         );
         promoMove.SetPromotionPiece(finalPiece);
 
+
         // Done with the pending entry
         pendingPromotionMoves.Remove(startSquare);
 
@@ -921,6 +905,23 @@ public class GameManager : NetworkBehaviour
         // 7) Let everyone do the final visuals
         ValidateAndExecuteMoveClientRpc(finalJson);
     }
+    [ClientRpc]
+    public void RequestSetParentClientRpc(ulong childId, ulong parentId)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(childId, out NetworkObject childNetObj) &&
+            NetworkManager.Singleton.SpawnManager.SpawnedObjects.TryGetValue(parentId, out NetworkObject parentNetObj))
+        {
+            // Set the parent manually on the client
+            childNetObj.transform.SetParent(parentNetObj.transform, true);
+            Debug.Log($"[Client] Successfully set parent of {childNetObj.gameObject.name} to {parentNetObj.gameObject.name}");
+        }
+        else
+        {
+            Debug.LogWarning("[Client] Could not set parent! Objects not found.");
+        }
+    }
+
+
 
 
 }

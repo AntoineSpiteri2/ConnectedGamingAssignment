@@ -113,6 +113,9 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
             {
                 // Correctly set the network parent  
                 netObj.TrySetParent(parentNetObj, true); // Set to false if you want to change local position  
+                GameManager.Instance.RequestSetParentClientRpc(netObj.NetworkObjectId, parentNetObj.NetworkObjectId);
+
+
             }
             else
             {

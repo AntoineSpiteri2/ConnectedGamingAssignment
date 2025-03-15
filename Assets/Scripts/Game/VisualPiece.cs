@@ -29,7 +29,7 @@ public class VisualPiece : MonoBehaviour
     public Square CurrentSquare => StringToSquare(transform.parent.name);
 
     // The radius used to detect nearby board squares for collision detection.
-    private const float SquareCollisionRadius = 9f;
+    private const float SquareCollisionRadius = 1f; // reduced from 9f
 
     // The camera used to view the board.
     private Camera boardCamera;
@@ -56,14 +56,18 @@ public class VisualPiece : MonoBehaviour
         // Obtain the main camera from the scene.
         boardCamera = Camera.main;
 
+
     }
 
     /// <summary>
     /// Called when the user presses the mouse button over the piece.
     /// Records the initial screen-space position of the piece.
     /// </summary>
+    private Square initialSquare;
+
     public void OnMouseDown()
     {
+
         if (!IsLocalPlayerTurn())
         {
             Debug.Log("Not your turn!");
@@ -75,6 +79,7 @@ public class VisualPiece : MonoBehaviour
             Debug.Log("Not your piece!");
             return;
         }
+        initialSquare = CurrentSquare; // explicitly store initial square
 
         // Disable Network Transform while dragging to prevent conflicts
         NetworkTransform netTransform = GetComponent<NetworkTransform>();
@@ -134,6 +139,7 @@ public class VisualPiece : MonoBehaviour
 
     public void OnMouseUp()
     {
+
         if (PieceColor != GameManager.Instance.SideToMove)
         {
             Debug.Log("Not your piece!");
@@ -183,7 +189,7 @@ public class VisualPiece : MonoBehaviour
             //if (piece is Pawn && (destinationSquare.Rank == 8 || destinationSquare.Rank == 1))
             //{
             //    ShowMneu(closestSquareTransform);
-               
+
 
 
 
@@ -191,15 +197,21 @@ public class VisualPiece : MonoBehaviour
             //}
             //else
             //{
-                VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
+            VisualPieceMoved?.Invoke(initialSquare, transform, closestSquareTransform);
 
-                // Re-enable Network Transform after move is finished
-                NetworkTransform netTransform = GetComponent<NetworkTransform>();
+
+            // Re-enable Network Transform after move is finished
+            NetworkTransform netTransform = GetComponent<NetworkTransform>();
                 if (netTransform != null)
                 {
                     netTransform.enabled = true;
                 }
+
+
+
             //}
+
+            Debug.DrawLine(transform.position, closestSquareTransform.position, Color.green, 5f);
 
 
 
