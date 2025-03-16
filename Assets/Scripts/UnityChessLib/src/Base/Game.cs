@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace UnityChess {
 	/// <summary>Representation of a standard chess game including a history of moves made.</summary>
@@ -107,10 +108,28 @@ namespace UnityChess {
 				return true;
 			}
 
+
+
 			return false;
 		}
 
-		public bool ResetGameToHalfMoveIndex(int halfMoveIndex) {
+        public void RecalculateLegalMoves()
+        {
+            if (!BoardTimeline.TryGetCurrent(out Board board) ||
+                !ConditionsTimeline.TryGetCurrent(out GameConditions gameConditions))
+            {
+                Debug.WriteLine("[Game] Unable to recalculate legal moves: No valid board or game conditions.");
+                return;
+            }
+
+            Dictionary<Piece, Dictionary<(Square, Square), Movement>> updatedLegalMoves =
+                CalculateLegalMovesForPosition(board, gameConditions);
+
+            LegalMovesTimeline.AddNext(updatedLegalMoves);
+        }
+
+
+        public bool ResetGameToHalfMoveIndex(int halfMoveIndex) {
 			if (HalfMoveTimeline.HeadIndex == -1) {
 				return false;
 			}
@@ -123,7 +142,7 @@ namespace UnityChess {
 			return true;
 		}
 		
-		internal static int GetNumLegalMoves(Dictionary<Piece, Dictionary<(Square, Square), Movement>> legalMovesByPiece) {
+		public static int GetNumLegalMoves(Dictionary<Piece, Dictionary<(Square, Square), Movement>> legalMovesByPiece) {
 			int result = 0;
 			
 			if (legalMovesByPiece != null) {
@@ -134,30 +153,55 @@ namespace UnityChess {
 
 			return result;
 		}
-		
-		internal static Dictionary<Piece, Dictionary<(Square, Square), Movement>> CalculateLegalMovesForPosition(
-			Board board,
-			GameConditions gameConditions
-		) {
-			Dictionary<Piece, Dictionary<(Square, Square), Movement>> result = null;
-			
-			for (int file = 1; file <= 8; file++) {
-				for (int rank = 1; rank <= 8; rank++) {
-					if (board[file, rank] is Piece piece
-					    && piece.Owner == gameConditions.SideToMove
-					    && piece.CalculateLegalMoves(board, gameConditions, new Square(file, rank)) is
-						    { } movesByStartEndSquares
-					) {
-						if (result == null) {
-							result = new Dictionary<Piece, Dictionary<(Square, Square), Movement>>();
-						}
+        public static Dictionary<Piece, Dictionary<(Square, Square), Movement>> CalculateLegalMovesForPosition(
+    Board board,
+    GameConditions gameConditions
+)
+        {
+            Dictionary<Piece, Dictionary<(Square, Square), Movement>> result = null;
 
-						result[piece] = movesByStartEndSquares;
-					}
-				}
-			}
+            for (int file = 1; file <= 8; file++)
+            {
+                for (int rank = 1; rank <= 8; rank++)
+                {
+                    if (board[file, rank] is Piece piece
+                        && piece.Owner == gameConditions.SideToMove
+                        && piece.CalculateLegalMoves(board, gameConditions, new Square(file, rank)) is
+                        { } movesByStartEndSquares
+                    )
+                    {
+                        if (result == null)
+                        {
+                            result = new Dictionary<Piece, Dictionary<(Square, Square), Movement>>();
+                        }
 
-			return result;
-		}
-	}
+                        if (piece is King)
+                        {
+                            movesByStartEndSquares = movesByStartEndSquares
+                                .Where(kvp => {
+                                    // Simulate the move
+                                    Board testBoard = new Board(board);
+                                    testBoard.MovePiece(kvp.Value);
+
+                                    // If the king is still in check after the move, discard it
+                                    bool kingStillInCheck = Rules.IsPlayerInCheck(testBoard, piece.Owner);
+                                    if (kingStillInCheck)
+                                    {
+                                        Debug.WriteLine($"[DEBUG] Removing illegal king move: {piece} from {kvp.Key.Item1} to {kvp.Key.Item2} (King still in check)");
+                                    }
+
+                                    return !kingStillInCheck; // Keep only safe moves
+                                })
+                                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+                        }
+
+                        result[piece] = movesByStartEndSquares;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+    }
 }

@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityChess;
 
@@ -21,6 +22,23 @@ public struct SerializablePiece : INetworkSerializable
     {
         serializer.SerializeValue(ref Type);
         serializer.SerializeValue(ref Owner);
+    }
+
+
+    public SerializablePiece(string type, string owner)
+    {
+        if (!Enum.TryParse(type, out PieceType parsedType))
+        {
+            throw new ArgumentException($"Invalid piece type: {type}");
+        }
+
+        if (!Enum.TryParse(owner, out Side parsedOwner))
+        {
+            throw new ArgumentException($"Invalid owner: {owner}");
+        }
+
+        this.Type = parsedType;
+        this.Owner = parsedOwner;
     }
 
     public static SerializablePiece FromPiece(Piece piece) => new SerializablePiece

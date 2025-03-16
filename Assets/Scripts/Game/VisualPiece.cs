@@ -29,7 +29,7 @@ public class VisualPiece : MonoBehaviour
     public Square CurrentSquare => StringToSquare(transform.parent.name);
 
     // The radius used to detect nearby board squares for collision detection.
-    private const float SquareCollisionRadius = 1f; // reduced from 9f
+    private const float SquareCollisionRadius = 9f; // reduced from 9f
 
     // The camera used to view the board.
     private Camera boardCamera;
@@ -64,31 +64,37 @@ public class VisualPiece : MonoBehaviour
     /// Records the initial screen-space position of the piece.
     /// </summary>
     private Square initialSquare;
+    private Transform correctPieceTransform;
 
     public void OnMouseDown()
     {
-
-        if (!IsLocalPlayerTurn())
+        if (!IsLocalPlayerTurn() || PieceColor != GameManager.Instance.SideToMove)
         {
-            Debug.Log("Not your turn!");
+            //Debug.Log("Invalid piece or not your turn.");
             return;
         }
 
-        if (PieceColor != GameManager.Instance.SideToMove)
+        Ray ray = boardCamera.ScreenPointToRay(Input.mousePosition);
+        if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Debug.Log("Not your piece!");
-            return;
-        }
-        initialSquare = CurrentSquare; // explicitly store initial square
+            VisualPiece clickedPiece = hit.collider.GetComponent<VisualPiece>();
+            if (clickedPiece == this)
+            {
+                initialSquare = CurrentSquare;
+                correctPieceTransform = transform;
 
-        // Disable Network Transform while dragging to prevent conflicts
-        NetworkTransform netTransform = GetComponent<NetworkTransform>();
-        if (netTransform != null)
-        {
-            netTransform.enabled = false;
-        }
+                //Debug.Log("Correct piece selected: " + initialSquare);
 
-        piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
+                if (networkTransform != null)
+                    networkTransform.enabled = false;
+
+                piecePositionSS = boardCamera.WorldToScreenPoint(transform.position);
+            }
+            else
+            {
+                //Debug.LogWarning("Incorrect piece clicked: " + clickedPiece.name);
+            }
+        }
     }
 
 
@@ -99,7 +105,7 @@ public class VisualPiece : MonoBehaviour
 
         if (GameManager.Instance.connectedPlayers.Count < 2)
         {
-            Debug.LogWarning("[CLIENT] Not enough players connected to determine turn.");
+            //Debug.LogWarning("[CLIENT] Not enough players connected to determine turn.");
             return false;
         }
 
@@ -120,7 +126,7 @@ public class VisualPiece : MonoBehaviour
         if (!IsLocalPlayerTurn()) return;
         if (PieceColor != GameManager.Instance.SideToMove)
         {
-            Debug.Log("Not your piece!");
+            //Debug.Log("Not your piece!");
             return;
         }
         Vector3 nextPiecePositionSS = new Vector3(Input.mousePosition.x, Input.mousePosition.y, piecePositionSS.z);
@@ -142,13 +148,13 @@ public class VisualPiece : MonoBehaviour
 
         if (PieceColor != GameManager.Instance.SideToMove)
         {
-            Debug.Log("Not your piece!");
+            //Debug.Log("Not your piece!");
             return;
         }
 
         if (!IsLocalPlayerTurn())
         {
-            Debug.Log("[CLIENT] Move Rejected - Not Your Turn!");
+            //Debug.Log("[CLIENT] Move Rejected - Not Your Turn!");
             transform.position = transform.parent.position; // Reset piece position
             return;
         }
@@ -159,7 +165,7 @@ public class VisualPiece : MonoBehaviour
 
             if (potentialLandingSquares.Count == 0)
             {
-                Debug.Log("[CLIENT] Move Rejected - No Valid Squares Found!");
+                //Debug.Log("[CLIENT] Move Rejected - No Valid Squares Found!");
 
                 transform.position = transform.parent.position;
                 return;
@@ -179,7 +185,7 @@ public class VisualPiece : MonoBehaviour
                     closestSquareTransform = potentialLandingSquare.transform;
                 }
             }
-            Debug.Log($"[CLIENT] Attempting Move from {CurrentSquare} to {closestSquareTransform.name}");
+            //Debug.Log($"[CLIENT] Attempting Move from {CurrentSquare} to {closestSquareTransform.name}");
 
             GameObject Movedpiece = BoardManager.Instance.GetPieceGOAtPosition(CurrentSquare);
             // Access the piece from the board logic.
@@ -197,7 +203,7 @@ public class VisualPiece : MonoBehaviour
             //}
             //else
             //{
-            VisualPieceMoved?.Invoke(initialSquare, transform, closestSquareTransform);
+            VisualPieceMoved?.Invoke(initialSquare, correctPieceTransform, closestSquareTransform);
 
 
             // Re-enable Network Transform after move is finished
@@ -211,7 +217,6 @@ public class VisualPiece : MonoBehaviour
 
             //}
 
-            Debug.DrawLine(transform.position, closestSquareTransform.position, Color.green, 5f);
 
 
 

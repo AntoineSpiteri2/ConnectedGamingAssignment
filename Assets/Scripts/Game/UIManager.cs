@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using TMPro;
+using Unity.Netcode;
 using UnityChess;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,9 +38,11 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	[SerializeField, Range(-0.25f, 0.25f)] private float buttonColorDarkenAmount = 0f;
 	// Darkening factor for alternate move history row colours (range -0.25 to 0.25).
 	[SerializeField, Range(-0.25f, 0.25f)] private float moveHistoryAlternateColorDarkenAmount = 0f;
-	
-	// Timeline to keep track of the full move UI elements in sequence.
-	private Timeline<FullMoveUI> moveUITimeline;
+	[SerializeField] private GameObject panel;
+    [SerializeField] private GameObject result;
+
+    // Timeline to keep track of the full move UI elements in sequence.
+    private Timeline<FullMoveUI> moveUITimeline;
 	// Computed button colour based on the background colour and darkening factor.
 	private Color buttonColor;
 
@@ -95,26 +99,62 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	/// Handles the event when the game ends (via checkmate or stalemate).
 	/// Displays the game outcome message.
 	/// </summary>
-	private void OnGameEnded() {
-		// Retrieve the latest half-move from the game timeline.
-		GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove latestHalfMove);
+    private void OnGameEnded()
+    {
+        Debug.Log("[UIManager] OnGameEnded event triggered.");
 
-		// Set the result text based on whether checkmate or stalemate occurred.
-		if (latestHalfMove.CausedCheckmate) {
-			resultText.text = $"{latestHalfMove.Piece.Owner} Wins!";
-		} else if (latestHalfMove.CausedStalemate) {
-			resultText.text = "Draw.";
-		}
+        if (GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove latestHalfMove))
+        {
+            Debug.Log($"[UIManager] Game ended detected. Checkmate: {latestHalfMove.CausedCheckmate}, Stalemate: {latestHalfMove.CausedStalemate}");
 
-		// Display the result text.
-		//resultText.gameObject.SetActive(true);
-	}
+            if (latestHalfMove.CausedCheckmate)
+            {
+                resultText.text = $"{latestHalfMove.Piece.Owner} Wins!";
+                //UpdateBoardTurn(resultText.text);
+				result.GetComponentInChildren<TextMeshPro>().text = $"{latestHalfMove.Piece.Owner} Wins!";
+                UpdateBoardTurnServerRpc();
 
-	/// <summary>
-	/// Handles the event when a move is executed.
-	/// Updates the game string, turn indicators, and adds the move to the move history UI.
-	/// </summary>
-	private void OnMoveExecuted() {
+            }
+            else if (latestHalfMove.CausedStalemate)
+            {
+                resultText.text = "Draw.";
+                //UpdateBoardTurn(resultText.text);
+                result.GetComponentInChildren<TextMeshPro>().text = $"{latestHalfMove.Piece.Owner} Wins!";
+				UpdateBoardTurnServerRpc();
+
+
+            }
+
+            resultText.gameObject.SetActive(true);
+            Debug.Log("[UIManager] Result text updated and shown.");
+        }
+        else
+        {
+            Debug.LogWarning("[UIManager] Failed to retrieve latest half move.");
+        }
+    }
+
+
+	[ServerRpc(RequireOwnership = false)]
+
+    public void UpdateBoardTurnServerRpc()
+	{
+		updateboardClientRpc();
+
+
+    }
+
+	[ClientRpc]
+	public void updateboardClientRpc()
+	{
+        panel.SetActive(true);
+
+    }
+    /// <summary>
+    /// Handles the event when a move is executed.
+    /// Updates the game string, turn indicators, and adds the move to the move history UI.
+    /// </summary>
+    private void OnMoveExecuted() {
 		// Update the serialized game string input field.
 		UpdateGameStringInputField();
 		// Get the side that is now to move.
@@ -184,10 +224,16 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	/// </summary>
 	public void ResetGameToLastHalfMove() => GameManager.Instance.ResetGameToHalfMoveIndex(GameManager.Instance.HalfMoveTimeline.Count - 1);
 
-	/// <summary>
-	/// Starts a new game by invoking the corresponding method in GameManager.
-	/// </summary>
-	public void StartNewGame() => GameManager.Instance.StartNewGame();
+    /// <summary>
+    /// Starts a new game by invoking the corresponding method in GameManager.
+    /// </summary>
+    /// 
+    string serialized = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    public void StartNewGame() => GameManager.Instance.UpdateGameStateClientRpc(serialized);
+
+
+	
 	
 	/// <summary>
 	/// Loads a game from the text entered in the game string input field.
@@ -323,5 +369,5 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
     /// <summary>
     /// Updates the game string input field with the current serialized game state.
     /// </summary>
-    private void UpdateGameStringInputField() => GameStringInputField.text = GameManager.Instance.SerializeGame();
+    public void UpdateGameStringInputField() => GameStringInputField.text = GameManager.Instance.SerializeGame();
 }

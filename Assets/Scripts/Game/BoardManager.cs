@@ -96,14 +96,26 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
             return;
         }
 
-        string modelName = $"{piece.Owner} {piece.GetType().Name}";
+        string pieceType = piece.GetType().Name;  // Should return "Pawn", "Knight", "Bishop", etc.
+        string pieceColor = piece.Owner.ToString(); // Should return "White" or "Black"
+        string modelName = $"{pieceColor} {pieceType}";  // Example: "White Pawn"
+        string path = "PieceSets/Marble/" + modelName;
+
+        //Debug.Log($"Spawning piece: {pieceColor} {pieceType} at {position} using path: {path}");
+
         GameObject pieceObject = Resources.Load("PieceSets/Marble/" + modelName) as GameObject;
+        pieceObject.name = $"{pieceColor}_{pieceType}_{position.File}{position.Rank}";
+        string pieceID = pieceObject.name;
+
         GameObject pieceGO = Instantiate(pieceObject, positionMap[position].transform);
+        pieceGO.name = pieceID;
 
         NetworkObject netObj = pieceGO.GetComponent<NetworkObject>();
         if (netObj != null)
         {
             netObj.Spawn(); // Replicates the object to all clients  
+            GameManager.Instance.SyncPieceNameServerRpc(netObj.NetworkObjectId, pieceID); // Ensure all clients get the correct name
+
 
             // Retrieve the parent's NetworkObject component  
             GameObject parentGO = GetSquareGOByPosition(position);
@@ -114,8 +126,6 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
                 // Correctly set the network parent  
                 netObj.TrySetParent(parentNetObj, true); // Set to false if you want to change local position  
                 GameManager.Instance.RequestSetParentClientRpc(netObj.NetworkObjectId, parentNetObj.NetworkObjectId);
-
-
             }
             else
             {
@@ -126,6 +136,10 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         {
             Debug.LogWarning("Spawned piece prefab has no NetworkObject component!");
         }
+
+
+
+
     }
 
     /// <summary>
@@ -161,6 +175,10 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         foreach (VisualPiece pieceBehaviour in visualPiece)
             pieceBehaviour.enabled = active;
     }
+
+
+
+
 
     /// <summary>
     /// Enables only the pieces belonging to the specified side that also have legal moves.
@@ -220,6 +238,9 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         return square.transform.childCount == 0 ? null : square.transform.GetChild(0).gameObject;
     }
 
+
+
+
     /// <summary>
     /// Computes the world-space position offset for a given file or rank index.
     /// </summary>
@@ -236,16 +257,25 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     /// <summary>
     /// Clears all visual pieces from the board.
     /// </summary>
-    private void ClearBoard()
+  public void ClearBoard()
+{
+    VisualPiece[] pieces = GetComponentsInChildren<VisualPiece>(true);
+    foreach (VisualPiece visualPiece in pieces)
     {
-        // Retrieve all VisualPiece components in child objects.
-        VisualPiece[] visualPiece = GetComponentsInChildren<VisualPiece>(true);
-        // Destroy each VisualPiece GameObject immediately.
-        foreach (VisualPiece pieceBehaviour in visualPiece)
+        if (visualPiece.TryGetComponent(out NetworkObject netObj))
         {
-            DestroyImmediate(pieceBehaviour.gameObject);
+            if (NetworkManager.Singleton.IsServer)
+                netObj.Despawn(true);
+            else
+                Destroy(visualPiece.gameObject);
+        }
+        else
+        {
+            Destroy(visualPiece.gameObject);
         }
     }
+}
+
 
     /// <summary>
     /// Retrieves the GameObject for a board square based on its chess notation.

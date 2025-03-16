@@ -19,7 +19,11 @@ namespace UnityChess {
 		
 		public override string ToString() => $"{Owner} {GetType().Name}";
 
-		public string ToTextArt() => this switch {
+		public string PieceName() => GetType().Name;
+
+		public string PieceOwner() => Owner.ToString();
+
+        public string ToTextArt() => this switch {
 			Bishop { Owner: Side.White } => "♝",
 			Bishop { Owner: Side.Black } => "♗",
 			King { Owner: Side.White } => "♚",
