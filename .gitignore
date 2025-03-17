@@ -22,6 +22,18 @@ ExportedObj/
 *.vsidx
 
 
+# Firebase files
+/google-services.json
+/GoogleService-Info.plist
+/firebase.json
+/.firebaserc
+/firebase-debug.log
+/functions/node_modules/
+/functions/lib/
+/functions/package-lock.json
+
+
+
 # Unity3D generated meta files
 *.pidb.meta
 
@@ -94,3 +106,12 @@ UnityChess\.Test/UnityChessLib/obj/
 UnityChess\.Test/UnityChessLib/bin/Debug/
 UnityChess\.Test/UnityChessLib/bin/
 *.DotSettings
+"# Firebase files" 
+"/google-services.json" 
+"/GoogleService-Info.plist" 
+"/firebase.json" 
+"/.firebaserc" 
+"/firebase-debug.log" 
+"/functions/node_modules/" 
+"/functions/lib/" 
+"/functions/package-lock.json" 
