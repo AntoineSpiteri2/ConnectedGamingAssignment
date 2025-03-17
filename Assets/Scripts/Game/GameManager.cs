@@ -27,6 +27,7 @@ public class GameManager : NetworkBehaviour
 
     }
 
+    public bool DebugMode = false;
 
     // Events signalling various game state changes.
     public static event Action NewGameStartedEvent;
@@ -35,6 +36,8 @@ public class GameManager : NetworkBehaviour
     
     public static event Action MoveExecutedEvent;
 
+    public NetworkVariable<FixedString128Bytes> WhitePFP = new NetworkVariable<FixedString128Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<FixedString128Bytes> BlackPFP = new NetworkVariable<FixedString128Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
 
     /// <summary>
@@ -157,7 +160,8 @@ public class GameManager : NetworkBehaviour
     /// <summary>
     /// Unity's Start method initialises the game and sets up event handlers.
     /// </summary>
-    public NetworkVariable<bool> gamehasended = new NetworkVariable<bool>(false);
+    public NetworkVariable<bool> gamehasended =  new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
 
 
 
@@ -232,10 +236,12 @@ public class GameManager : NetworkBehaviour
 
         }
 
-        EndTurn();
+        //EndTurn();
 
         // Update UI
         //UIManager.Instance.UpdateGameStringInputField();
+        NotifyTurnChangeClientRpc(isWhiteTurn);
+        UpdateTurnIndicatorClientRpc(isWhiteTurn);
         UIManager.Instance.ValidateIndicators();
     }
 
@@ -243,6 +249,8 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void SyncPieceNameServerRpc(ulong networkObjectId, string pieceName)
     {
+        GameManager.Instance.gamehasended.Value = false;
+
         SyncPieceNameClientRpc(networkObjectId, pieceName);
     }
 
@@ -309,7 +317,8 @@ public class GameManager : NetworkBehaviour
         {
             // Possibly broadcast game end
             bool isWhiteWin = latestHalfMove.CausedCheckmate && latestHalfMove.Piece.Owner == Side.White;
-            Debug.Log("[GameManager] Game End condition met. Invoking GameEndedEvent.");
+            if (DebugMode) Debug.Log("[GameManager] Game End condition met. Invoking GameEndedEvent.");
+
 
             DeclareGameEndServerRpc(latestHalfMove.CausedCheckmate, isWhiteWin: isWhiteWin);
 
@@ -447,30 +456,106 @@ public class GameManager : NetworkBehaviour
     // Store connected player IDs
     public List<ulong> connectedPlayers = new List<ulong>();
 
+    private NetworkVariable<float> clientPing = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
     public override void OnNetworkSpawn()
     {
         if (IsServer)
         {
-            Debug.Log("GameManager initialized on the server.");
+            if (DebugMode) Debug.Log("GameManager initialized on the server.");
             NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
+            InvokeRepeating(nameof(SendPingRequest), 1f, 15f); // Ping every 15 seconds
+            WhitePFP.Value = "";
+            BlackPFP.Value = "";
+
+        }
+    }
+
+    /// <summary>
+    /// Sets the PFP for the correct player based on their slot.
+    /// Player 0 is White, Player 1 is Black.
+    /// </summary>
+    [ServerRpc(RequireOwnership = false)]
+    public void SetPlayerPFPServerRpc(ulong clientID, string pfpID)
+    {
+        if (connectedPlayers.Count >= 2)
+        {
+            if (connectedPlayers[0] == clientID)
+            {
+                WhitePFP.Value = pfpID;
+            }
+            else if (connectedPlayers[1] == clientID)
+            {
+                BlackPFP.Value = pfpID;
+            }
+        }
+    }
+
+    // Send ping request from server to all clients (including host)
+    private void SendPingRequest()
+    {
+        if (IsServer)
+        {
+            float timestamp = Time.time;
+            RequestPingClientRpc(timestamp);
         }
     }
 
 
+    [ClientRpc]
+    private void RequestPingClientRpc(float timestamp, ClientRpcParams clientRpcParams = default)
+    {
+        if (IsClient)
+        {
+            RespondPingServerRpc(timestamp);
+        }
+    }
 
+    [ServerRpc(RequireOwnership = false)]
+    private void RespondPingServerRpc(float timestamp, ServerRpcParams serverRpcParams = default)
+    {
+        if (IsServer)
+        {
+            // Calculate round-trip time (RTT)
+            float roundTripTime = (Time.time - timestamp) * 1000f; // Convert to ms
+            ulong clientId = serverRpcParams.Receive.SenderClientId;
+
+            //Debug.Log($"[SERVER] Ping from Client {clientId}: {roundTripTime:F1} ms");
+
+            // Store the latest ping value
+            clientPing.Value = roundTripTime;
+
+            // Send the updated ping to both host and clients
+            UpdatePingClientRpc(clientId, roundTripTime);
+        }
+    }
+
+    // Send the updated ping to both client and host UI
+    [ClientRpc]
+    private void UpdatePingClientRpc(ulong clientId, float ping)
+    {
+        if (UIManager.Instance != null)
+        {
+            Debug.Log($"[CLIENT] Updated Ping for Client {clientId}: {ping:F1} ms");
+        }
+    }
     private void OnClientConnected(ulong clientId)
     {
         connectedPlayers.Add(clientId);
-        Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
+        DLCManager.Instance.userID = clientId.ToString();
+        DLCManager.Instance.LoadUserSelectedPFP(); // Auto-load stored PFP
+
+        if (DebugMode) Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
+        LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // Load the default game state for all players as they connect host is responsable for saving the game state by keeping track the string of the game state
+                                                                              //which they can easily do by saving that  text in the host and load back clients
         UpdateConnectedPlayersClientRpc(connectedPlayers.ToArray());
-        NotifyTurnChangeClientRpc(isWhiteTurn);
-        //UpdateGameStateClientRpc();
-       
+
+
         // If at least two players are connected, start the game
         if (IsServer && connectedPlayers.Count >= 2)
         {
-            Debug.Log("Two players connected, starting the game...");
+            if (DebugMode) Debug.Log("Two players connected, starting the game...");
         }
     }
 
@@ -479,13 +564,13 @@ public class GameManager : NetworkBehaviour
     {
         // Use the received array to update a local list on the client.
         connectedPlayers = new List<ulong>(playerIds);
-        Debug.Log("Updated connected players on client.");
+        if (DebugMode) Debug.Log("Updated connected players on client.");
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
         connectedPlayers.Remove(clientId);
-        Debug.Log($"[Server] Player {clientId} disconnected.");
+        if (DebugMode) Debug.Log($"[Server] Player {clientId} disconnected.");
 
 
 
@@ -493,7 +578,7 @@ public class GameManager : NetworkBehaviour
         // Check if the host (server) disconnected
         if (clientId == NetworkManager.ServerClientId)
         {
-            Debug.Log("Host disconnected! Resetting game.");
+            if (DebugMode) Debug.Log("Host disconnected! Resetting game.");
             ResetGame();
 
             // Optionally, notify all clients that the session has ended
@@ -501,43 +586,15 @@ public class GameManager : NetworkBehaviour
         }
         else if (IsServer && connectedPlayers.Count == 0)
         {
-            Debug.Log("All players disconnected. Resetting game.");
+            if (DebugMode) Debug.Log("All players disconnected. Resetting game.");
             ResetGame();
         }
     }
 
-    //[ClientRpc]
-    //private void SyncDestroyedPiecesClientRpc(ulong clientId, SerializableSquare[] destroyedPiecesArray)
-    //{
-    //    Debug.Log($"[CLIENT] Syncing destroyed pieces for reconnecting player {clientId}");
-
-    //    foreach (SerializableSquare wrapper in destroyedPiecesArray)
-    //    {
-    //        //Square square = wrapper.ToSquare();
-    //        BoardManager.Instance.TryDestroyVisualPiece(wrapper.ToSquare());
-    //    }
-    //}
-
-    //[ClientRpc]
-    //private void SyncBoardStateClientRpc(ulong clientId)
-    //{
-    //    Debug.Log($"[CLIENT] Syncing full board state for player {clientId}");
-
-    //    foreach ((Square position, Piece piece) in GameManager.Instance.CurrentPieces)
-    //    {
-    //        GameObject pieceGO = BoardManager.Instance.GetPieceGOAtPosition(position);
-    //        if (pieceGO == null)
-    //        {
-    //            // Ensure missing pieces are re-created for the reconnecting client
-    //            BoardManager.Instance.CreateAndPlacePieceGO(piece, position);
-    //        }
-    //    }
-    //}
-
 
     private void ResetGame()
     {
-        Debug.Log("[Server] Resetting game...");
+        if (DebugMode) Debug.Log("[Server] Resetting game...");
         StartNewGame();
         destroyedPieces.Clear();
     }
@@ -604,14 +661,14 @@ public class GameManager : NetworkBehaviour
         {
             return;
         }
-        Debug.Log($"[CLIENT] Received Turn Change - Expected Turn: {(whiteTurn ? "White's Turn" : "Black's Turn")}");
+        if (DebugMode) Debug.Log($"[CLIENT] Received Turn Change - Expected Turn: {(whiteTurn ? "White's Turn" : "Black's Turn")}");
 
         // Explicitly set the turn variable
         isWhiteTurn = whiteTurn;
 
         // Force update of SideToMove on the client
         SideToMove = isWhiteTurn ? Side.White : Side.Black;
-        Debug.Log($"[CLIENT] Forced SideToMove Update - Now: {(SideToMove == Side.White ? "White" : "Black")}");
+        if (DebugMode) Debug.Log($"[CLIENT] Forced SideToMove Update - Now: {(SideToMove == Side.White ? "White" : "Black")}");
 
         // Update UI after ensuring SideToMove is set correctly
         UIManager.Instance.ValidateIndicators();
@@ -649,7 +706,7 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public    void RequestMoveValidationServerRpc(string moveJson, ulong clientid)
     {
-        Debug.Log($"[SERVER] Received move JSON: {moveJson}");
+        if (DebugMode) Debug.Log($"[SERVER] Received move JSON: {moveJson}");
 
 
         MoveDTO moveData = JsonUtility.FromJson<MoveDTO>(moveJson);
@@ -657,7 +714,7 @@ public class GameManager : NetworkBehaviour
         GameObject endObj = GameObject.Find(moveData.destinationSquareTransformName);
         if (!endObj)
         {
-            Debug.LogWarning("[Server] Destination transform not found. Rejecting move.");
+            if (DebugMode) Debug.LogWarning("[Server] Destination transform not found. Rejecting move.");
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -669,7 +726,7 @@ public class GameManager : NetworkBehaviour
          // Attempt to retrieve a valid move
         if (!game.TryGetLegalMove(startSquare, endSquare, out Movement move))
         {
-            Debug.LogWarning("[Server] Move was invalid according to the chess logic. Rejecting...");
+            if (DebugMode) Debug.LogWarning("[Server] Move was invalid according to the chess logic. Rejecting...");
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -695,7 +752,7 @@ public class GameManager : NetworkBehaviour
         if (promoMove is SpecialMove specialMove )
         {
             // We have a promotion move with no piece set -> we must ask the client
-            Debug.Log($"[Server] Received PromotionMove for {startSquare}->{endSquare}, but no piece chosen yet.");
+            if (DebugMode) Debug.Log($"[Server] Received PromotionMove for {startSquare}->{endSquare}, but no piece chosen yet.");
 
             // Store it so we can finalize later once the client picks
             pendingPromotionMoves[startSquare] = promoMove;
@@ -716,7 +773,7 @@ public class GameManager : NetworkBehaviour
 
         if (move is SpecialMove specialMove_ && !TryHandleSpecialMoveBehaviourServer(specialMove_))
         {
-            Debug.LogWarning("[Server] Special move handling failed. Rejecting...");
+            if (DebugMode) Debug.Log("[Server] Special move handling failed. Rejecting...");
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -724,7 +781,7 @@ public class GameManager : NetworkBehaviour
         // Attempt to execute the move within the chess logic
         if (!TryExecuteMove(move))
         {
-            Debug.LogWarning("[Server] Move could not be executed. Rejecting...");
+            if (DebugMode) Debug.LogWarning("[Server] Move could not be executed. Rejecting...");
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -771,7 +828,7 @@ public class GameManager : NetworkBehaviour
     {
         if (!IsServer)
         {
-            Debug.LogWarning("Only the server can destroy pieces.");
+            if (DebugMode) Debug.LogWarning("Only the server can destroy pieces.");
             return false;
         }
 
@@ -783,7 +840,7 @@ public class GameManager : NetworkBehaviour
             return true;
         }
 
-        Debug.LogWarning($"Could not find piece with name: {pieceName} to destroy.");
+        if (DebugMode) Debug.LogWarning($"Could not find piece with name: {pieceName} to destroy.");
         return false;
     }
 
@@ -815,14 +872,14 @@ public class GameManager : NetworkBehaviour
         GameObject pieceObj = GameObject.Find(moveData.pieceTransformName);
         if (!pieceObj)
         {
-            Debug.LogWarning("[Client] Could not find piece to move. Possibly out of sync?");
+            if (DebugMode) Debug.LogWarning("[Client] Could not find piece to move. Possibly out of sync?");
             return;
         }
 
         GameObject endObj = GameObject.Find(moveData.destinationSquareTransformName);
         if (!endObj)
         {
-            Debug.LogWarning("[Client] Could not find end transform. Possibly out of sync?");
+            if (DebugMode) Debug.LogWarning("[Client] Could not find end transform. Possibly out of sync?");
             return;
         }
 
@@ -845,7 +902,7 @@ public class GameManager : NetworkBehaviour
             BoardManager.Instance.TryDestroyVisualPiece(startSquare);
             BoardManager.Instance.TryDestroyVisualPiece(endSquare);
 
-            Debug.Log("spawning a piece!");
+            if (DebugMode) Debug.Log("spawning a piece!");
             // Rebuild the newly promoted piece
             Piece newPiece = PromotionUtil.GeneratePromotionPiece(
                 ConvertElectedPieceType(moveData.promotionPieceType),
@@ -924,7 +981,7 @@ public class GameManager : NetworkBehaviour
         promotionUITaskCancellationTokenSource?.Cancel();
         promotionUITaskCancellationTokenSource = new CancellationTokenSource();
 
-        Debug.Log("[Client] The server wants us to pick a promotion piece!");
+        if (DebugMode) Debug.Log("[Client] The server wants us to pick a promotion piece!");
 
         HandlePromotionChoiceAsync(moveJson);
     }
@@ -932,7 +989,7 @@ public class GameManager : NetworkBehaviour
 
     private async void HandlePromotionChoiceAsync(string moveJson)
     {
-        Debug.Log("[Client] The server wants us to pick a promotion piece!");
+        if (DebugMode) Debug.Log("[Client] The server wants us to pick a promotion piece!");
 
         // Await the asynchronous user input (e.g., promotion piece selection).
         ElectedPiece choice = await Task.Run(GetUserPromotionPieceChoice, promotionUITaskCancellationTokenSource.Token);
@@ -957,7 +1014,7 @@ public class GameManager : NetworkBehaviour
         // 2) Retrieve our partial PromotionMove from the dictionary
         if (!pendingPromotionMoves.TryGetValue(startSquare, out PromotionMove promoMove))
         {
-            Debug.LogWarning("[Server] No pending promotion move found for " + startSquare);
+            if (DebugMode) Debug.LogWarning("[Server] No pending promotion move found for " + startSquare);
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -976,7 +1033,7 @@ public class GameManager : NetworkBehaviour
         // 4) Now handle special moves if needed
         if (!TryHandleSpecialMoveBehaviourServer(promoMove))
         {
-            Debug.LogWarning("[Server] special move handling failed for promotion. Rejecting...");
+            if (DebugMode) Debug.LogWarning("[Server] special move handling failed for promotion. Rejecting...");
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -984,7 +1041,7 @@ public class GameManager : NetworkBehaviour
         // 5) Attempt to finalize
         if (!TryExecuteMove(promoMove))
         {
-            Debug.LogWarning("[Server] Move could not be executed. Rejecting...");
+            if (DebugMode) Debug.LogWarning("[Server] Move could not be executed. Rejecting...");
             RejectMoveClientRpc(moveJson);
             return;
         }
@@ -1016,11 +1073,11 @@ public class GameManager : NetworkBehaviour
         {
             // Set the parent manually on the client
             childNetObj.transform.SetParent(parentNetObj.transform, true);
-            Debug.Log($"[Client] Successfully set parent of {childNetObj.gameObject.name} to {parentNetObj.gameObject.name}");
+            if (DebugMode) if (DebugMode) Debug.Log($"[Client] Successfully set parent of {childNetObj.gameObject.name} to {parentNetObj.gameObject.name}");
         }
         else
         {
-            Debug.LogWarning("[Client] Could not set parent! Objects not found.");
+            if (DebugMode) if (DebugMode) Debug.LogWarning("[Client] Could not set parent! Objects not found.");
         }
     }
     public int GetNumLegalMovesForCurrentPosition()
@@ -1032,8 +1089,7 @@ public class GameManager : NetworkBehaviour
         // Calculate the legal moves for the current position
         var legalMovesByPiece = Game.CalculateLegalMovesForPosition(currentBoard, currentConditions);
 
-        // 🔥 Debug: Print only the king's moves
-        Debug.Log("[DEBUG] Listing legal moves for the king:");
+        if (DebugMode) Debug.Log("[DEBUG] Listing legal moves for the king:");
 
         int kingMoveCount = 0;
         foreach (var pieceMoves in legalMovesByPiece)
@@ -1045,13 +1101,13 @@ public class GameManager : NetworkBehaviour
             {
                 foreach (var move in pieceMoves.Value)
                 {
-                    Debug.Log($"[DEBUG] King at {move.Key.Item1} can move to {move.Key.Item2}");
+                    if (DebugMode) Debug.Log($"[DEBUG] King at {move.Key.Item1} can move to {move.Key.Item2}");
                     kingMoveCount++;
                 }
             }
         }
 
-        Debug.Log($"[DEBUG] Total counted legal moves for the king: {kingMoveCount}");
+        if (DebugMode) Debug.Log($"[DEBUG] Total counted legal moves for the king: {kingMoveCount}");
 
         return kingMoveCount;
     }

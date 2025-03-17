@@ -70,7 +70,7 @@ public class VisualPiece : MonoBehaviour
     {
         if (!IsLocalPlayerTurn() || PieceColor != GameManager.Instance.SideToMove)
         {
-            //Debug.Log("Invalid piece or not your turn.");
+            if (GameManager.Instance.DebugMode) Debug.Log("Invalid piece or not your turn.");
             return;
         }
 
@@ -92,7 +92,7 @@ public class VisualPiece : MonoBehaviour
             }
             else
             {
-                //Debug.LogWarning("Incorrect piece clicked: " + clickedPiece.name);
+                if (GameManager.Instance.DebugMode) Debug.LogWarning("Incorrect piece clicked: " + clickedPiece.name);
             }
         }
     }
@@ -105,7 +105,7 @@ public class VisualPiece : MonoBehaviour
 
         if (GameManager.Instance.connectedPlayers.Count < 2)
         {
-            //Debug.LogWarning("[CLIENT] Not enough players connected to determine turn.");
+            if (GameManager.Instance.DebugMode) Debug.LogWarning("[CLIENT] Not enough players connected to determine turn.");
             return false;
         }
 
@@ -126,7 +126,7 @@ public class VisualPiece : MonoBehaviour
         if (!IsLocalPlayerTurn()) return;
         if (PieceColor != GameManager.Instance.SideToMove)
         {
-            //Debug.Log("Not your piece!");
+            if (GameManager.Instance.DebugMode) Debug.Log("Not your piece!");
             return;
         }
         Vector3 nextPiecePositionSS = new Vector3(Input.mousePosition.x, Input.mousePosition.y, piecePositionSS.z);
@@ -148,13 +148,13 @@ public class VisualPiece : MonoBehaviour
 
         if (PieceColor != GameManager.Instance.SideToMove)
         {
-            //Debug.Log("Not your piece!");
+            if (GameManager.Instance.DebugMode) Debug.Log("Not your piece!");
             return;
         }
 
         if (!IsLocalPlayerTurn())
         {
-            //Debug.Log("[CLIENT] Move Rejected - Not Your Turn!");
+            if (GameManager.Instance.DebugMode) Debug.Log("[CLIENT] Move Rejected - Not Your Turn!");
             transform.position = transform.parent.position; // Reset piece position
             return;
         }
@@ -165,7 +165,7 @@ public class VisualPiece : MonoBehaviour
 
             if (potentialLandingSquares.Count == 0)
             {
-                //Debug.Log("[CLIENT] Move Rejected - No Valid Squares Found!");
+                if (GameManager.Instance.DebugMode) Debug.Log("[CLIENT] Move Rejected - No Valid Squares Found!");
 
                 transform.position = transform.parent.position;
                 return;
@@ -185,24 +185,14 @@ public class VisualPiece : MonoBehaviour
                     closestSquareTransform = potentialLandingSquare.transform;
                 }
             }
-            //Debug.Log($"[CLIENT] Attempting Move from {CurrentSquare} to {closestSquareTransform.name}");
+            if (GameManager.Instance.DebugMode) Debug.Log($"[CLIENT] Attempting Move from {CurrentSquare} to {closestSquareTransform.name}");
 
             GameObject Movedpiece = BoardManager.Instance.GetPieceGOAtPosition(CurrentSquare);
             // Access the piece from the board logic.
             Piece piece = GameManager.Instance.CurrentBoard[CurrentSquare];
             Square destinationSquare = StringToSquare(closestSquareTransform.name);
 
-            //if (piece is Pawn && (destinationSquare.Rank == 8 || destinationSquare.Rank == 1))
-            //{
-            //    ShowMneu(closestSquareTransform);
 
-
-
-
-
-            //}
-            //else
-            //{
             VisualPieceMoved?.Invoke(initialSquare, correctPieceTransform, closestSquareTransform);
 
 
@@ -215,7 +205,6 @@ public class VisualPiece : MonoBehaviour
 
 
 
-            //}
 
 
 
@@ -228,41 +217,7 @@ public class VisualPiece : MonoBehaviour
 
     }
 
-    //public async Task ShowMneu(Transform closestSquareTransform)
-    //{
-    //    Square startSquare = CurrentSquare;
-    //    Square endSquare = StringToSquare(closestSquareTransform.name);
 
-    //    if (GameManager.Instance.game.TryGetLegalMove(startSquare, endSquare, out Movement move))
-    //    {
-
-    //        if ((move is not SpecialMove specialMove || await GameManager.Instance.TryHandleSpecialMoveBehaviourAsync(specialMove)))
-    //        {
-    //            VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
-
-    //            // Re-enable Network Transform after move is finished
-    //            NetworkTransform netTransform = GetComponent<NetworkTransform>();
-    //            if (netTransform != null)
-    //            {
-    //                netTransform.enabled = true;
-    //            }
-    //        }
-    //        else
-    //        {
-    //            VisualPieceMoved?.Invoke(CurrentSquare, transform, closestSquareTransform);
-
-    //            // Re-enable Network Transform after move is finished
-    //            NetworkTransform netTransform = GetComponent<NetworkTransform>();
-    //            if (netTransform != null)
-    //            {
-    //                netTransform.enabled = true;
-    //            }
-    //        }
-
-
-    //    }
-
-    //}
 
 
 }

@@ -3,34 +3,73 @@ using Unity.Netcode;
 using UnityEngine.UI;
 using Unity.Netcode.Transports.UTP;
 using System;
+using System.Text.RegularExpressions;
+using TMPro;
+
 public class NetworkUI : MonoBehaviour
 {
     [SerializeField] private Button ServerButton;
     [SerializeField] private Button ClientButton;
     [SerializeField] private Button HostButton;
     [SerializeField] private GameObject Panel;
+    [SerializeField] private TMP_InputField IpText; // Changed to InputField
+
     private UnityTransport transport;
+
     private void Awake()
     {
         ClientButton.onClick.AddListener(StartClient);
         HostButton.onClick.AddListener(StartHost);
     }
 
+    private void Start()
+    {
+        transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
 
-   void StartClient()
+        if (Application.platform == RuntimePlatform.WindowsPlayer)
+        {
+            if (GameManager.Instance.DebugMode) Debug.Log("Game is running in build mode");
+        }
+        else if (Application.isEditor)
+        {
+            if (GameManager.Instance.DebugMode) Debug.Log("Game is running in Unity Editor");
+        }
+        else if (Application.platform == RuntimePlatform.LinuxServer && Application.isBatchMode &&
+                  !Application.isEditor)
+        {
+            if (GameManager.Instance.DebugMode) Debug.Log("Game is running on Linux Dedicated Server");
+        }
+
+        if (NetworkManager.Singleton != null)
+        {
+            if (GameManager.Instance.DebugMode) Debug.Log($"UTP working with IP:{transport.ConnectionData.Address} and Port:{transport.ConnectionData.Port}");
+        }
+    }
+
+    private void StartClient()
     {
         try
         {
+            string ip = IpText.text.Trim();
+
+            if (!IsValidIPAddress(ip))
+            {
+                IpText.text = "Invalid IP Address!";
+                return;
+            }
+
+            transport.ConnectionData.Address = ip; // Set custom IP before starting client
+
             if (!NetworkManager.Singleton.StartClient())
             {
-                Debug.LogError("Failed to start client.");
+                if (GameManager.Instance.DebugMode) Debug.LogError("Failed to start client.");
                 return;
             }
             Destroy(Panel);
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Exception occurred while starting client: {ex.Message}");
+            if (GameManager.Instance.DebugMode) Debug.LogError($"Exception occurred while starting client: {ex.Message}");
         }
     }
 
@@ -38,51 +77,35 @@ public class NetworkUI : MonoBehaviour
     {
         try
         {
+            transport.ConnectionData.Address = "0.0.0.0"; // Listen on all available network interfaces
+
             if (!NetworkManager.Singleton.StartHost())
             {
-                Debug.LogError("Failed to start host.");
+                if (GameManager.Instance.DebugMode) Debug.LogError("Failed to start host.");
                 return;
             }
-            Debug.Log($"Server started listening on {transport.ConnectionData.ServerListenAddress} and port {transport.ConnectionData.Port}");
+
+            Debug.Log($"Server started listening on {transport.ConnectionData.Address} and port {transport.ConnectionData.Port}");
             CheckIfRunningLocally();
             Destroy(Panel);
-
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Exception occurred while starting host: {ex.Message}");
+            if (GameManager.Instance.DebugMode) Debug.LogError($"Exception occurred while starting host: {ex.Message}");
         }
     }
 
     private void CheckIfRunningLocally()
     {
-        if (transport.ConnectionData.ServerListenAddress == "127.0.0.1")
+        if (transport.ConnectionData.Address == "127.0.0.1")
         {
-            Debug.LogWarning("Server is listening locally (127.0.0.1) ONLY!");
+            if (GameManager.Instance.DebugMode) Debug.LogWarning("Server is listening locally (127.0.0.1) ONLY!");
         }
     }
 
-    private void Start()
+    private bool IsValidIPAddress(string ip)
     {
-        transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        
-        if (Application.platform == RuntimePlatform.WindowsPlayer)
-        {
-            Debug.Log("Game is running in build mode");
-        }else if (Application.isEditor)
-        {
-            Debug.Log("Game is running in Unity Editor");
-        }else if (Application.platform == RuntimePlatform.LinuxServer && Application.isBatchMode &&
-                  !Application.isEditor)
-        {
-            Debug.Log("Game is running on Linux Dedicated Server");
-        }
-
-        if (NetworkManager.Singleton != null)
-        {
-            Debug.Log($"UTP working with IP:{transport.ConnectionData.Address} and Port:{transport.ConnectionData.Port}");
-        }
+        string pattern = @"^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$";
+        return Regex.IsMatch(ip, pattern);
     }
-    
-    
 }

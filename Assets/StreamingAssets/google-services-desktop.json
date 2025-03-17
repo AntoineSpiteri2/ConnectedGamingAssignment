@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "99470209867",
+    "project_id": "connectedgamingassignmen-6f14e",
+    "storage_bucket": "connectedgamingassignmen-6f14e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99470209867:android:6a57ec9580143489bceece",
+        "android_client_info": {
+          "package_name": "com.ConnectedGaming.firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbE_EHh1-wNzDiFCzKk80ydp_Cqx9JDSg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99470209867:android:7ef6088c42571ddfbceece",
+        "android_client_info": {
+          "package_name": "com.connectedgaming.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbE_EHh1-wNzDiFCzKk80ydp_Cqx9JDSg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

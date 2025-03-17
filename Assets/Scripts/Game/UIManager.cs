@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Firebase.Extensions;
+using Firebase.Firestore;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using TMPro;
 using Unity.Netcode;
 using UnityChess;
@@ -38,20 +42,31 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	[SerializeField, Range(-0.25f, 0.25f)] private float buttonColorDarkenAmount = 0f;
 	// Darkening factor for alternate move history row colours (range -0.25 to 0.25).
 	[SerializeField, Range(-0.25f, 0.25f)] private float moveHistoryAlternateColorDarkenAmount = 0f;
-	[SerializeField] private GameObject panel;
-    [SerializeField] private GameObject result;
+	[SerializeField] private GameObject DlcStore;
+
+
+
 
     // Timeline to keep track of the full move UI elements in sequence.
     private Timeline<FullMoveUI> moveUITimeline;
 	// Computed button colour based on the background colour and darkening factor.
 	private Color buttonColor;
 
-	/// <summary>
-	/// Initialises the UIManager, subscribes to game events, and configures initial UI settings.
-	/// </summary>
-	private void Start() {
-		// Subscribe to various game events.
-		GameManager.NewGameStartedEvent += OnNewGameStarted;
+    public string playerId = "testUser"; // Change this to use Firebase Auth for real users
+
+
+
+    public void ToggleDLCStore()
+    {
+        DlcStore.SetActive(!DlcStore.activeSelf);
+    }
+    /// <summary>
+    /// Initialises the UIManager, subscribes to game events, and configures initial UI settings.
+    /// </summary>
+    private void Start() {
+
+        // Subscribe to various game events.
+        GameManager.NewGameStartedEvent += OnNewGameStarted;
 		GameManager.GameEndedEvent += OnGameEnded;
 		GameManager.MoveExecutedEvent += OnMoveExecuted;
 		GameManager.GameResetToHalfMoveEvent += OnGameResetToHalfMove;
@@ -95,59 +110,62 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 		//resultText.gameObject.SetActive(false);
 	}
 
-	/// <summary>
-	/// Handles the event when the game ends (via checkmate or stalemate).
-	/// Displays the game outcome message.
-	/// </summary>
+
+
+    /// <summary>
+    /// Handles the event when the game ends (via checkmate or stalemate).
+    /// Displays the game outcome message.
+    /// </summary>
     private void OnGameEnded()
     {
-        Debug.Log("[UIManager] OnGameEnded event triggered.");
+        if (GameManager.Instance.DebugMode) Debug.Log("[UIManager] OnGameEnded event triggered.");
 
         if (GameManager.Instance.HalfMoveTimeline.TryGetCurrent(out HalfMove latestHalfMove))
         {
-            Debug.Log($"[UIManager] Game ended detected. Checkmate: {latestHalfMove.CausedCheckmate}, Stalemate: {latestHalfMove.CausedStalemate}");
+            if (GameManager.Instance.DebugMode) Debug.Log($"[UIManager] Game ended detected. Checkmate: {latestHalfMove.CausedCheckmate}, Stalemate: {latestHalfMove.CausedStalemate}");
 
             if (latestHalfMove.CausedCheckmate)
             {
                 resultText.text = $"{latestHalfMove.Piece.Owner} Wins!";
-                //UpdateBoardTurn(resultText.text);
-				result.GetComponentInChildren<TextMeshPro>().text = $"{latestHalfMove.Piece.Owner} Wins!";
-                UpdateBoardTurnServerRpc();
+
+				UpdateBoardTurn(resultText.text);
+				//result.GetComponentInChildren<TextMeshPro>().text = $"{latestHalfMove.Piece.Owner} Wins!";
+				UpdateBoardTurnServerRpc(resultText.text);
 
             }
             else if (latestHalfMove.CausedStalemate)
             {
                 resultText.text = "Draw.";
-                //UpdateBoardTurn(resultText.text);
-                result.GetComponentInChildren<TextMeshPro>().text = $"{latestHalfMove.Piece.Owner} Wins!";
-				UpdateBoardTurnServerRpc();
+				UpdateBoardTurn(resultText.text);
+				//result.GetComponentInChildren<TextMeshPro>().text = $"{latestHalfMove.Piece.Owner} Wins!";
+				UpdateBoardTurnServerRpc(resultText.text);
 
 
             }
 
             resultText.gameObject.SetActive(true);
-            Debug.Log("[UIManager] Result text updated and shown.");
+            if (GameManager.Instance.DebugMode) Debug.Log("[UIManager] Result text updated and shown.");
         }
         else
         {
-            Debug.LogWarning("[UIManager] Failed to retrieve latest half move.");
+            if (GameManager.Instance.DebugMode) Debug.LogWarning("[UIManager] Failed to retrieve latest half move.");
         }
     }
 
 
 	[ServerRpc(RequireOwnership = false)]
-
-    public void UpdateBoardTurnServerRpc()
-	{
-		updateboardClientRpc();
-
-
+    public void UpdateBoardTurnServerRpc(string text)
+    {
+        GameManager.Instance.gamehasended.Value = true; 
+        updateboardClientRpc(text);
     }
 
 	[ClientRpc]
-	public void updateboardClientRpc()
+	public void updateboardClientRpc(string text)
 	{
-        panel.SetActive(true);
+
+        resultText.text = text;
+
 
     }
     /// <summary>
@@ -230,22 +248,83 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
     /// 
     string serialized = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    public void StartNewGame() => GameManager.Instance.UpdateGameStateClientRpc(serialized);
+    public void StartNewGame()
+    {
+        resultText.gameObject.transform.parent.gameObject.SetActive(true);
+        resultText.gameObject.SetActive(true);
+		resultText.enabled = true;
+        if (NetworkManager.Singleton.IsServer)
+        {
+            GameManager.Instance.LoadGame(serialized);
+            resultText.gameObject.SetActive(true);
+
+            resultText.text = "Its White turn";
+
+        }
+        else
+        {
+            resultText.gameObject.SetActive(true);
+            resultText.gameObject.transform.parent.gameObject.SetActive(true);
+
+            StartCoroutine(DisplayMessageForSeconds("Only the host can start a new game", 3));
+        }
+    }
 
 
-	
-	
-	/// <summary>
-	/// Loads a game from the text entered in the game string input field.
-	/// </summary>
-	public void LoadGame() => GameManager.Instance.LoadGame(GameStringInputField.text);
 
-	/// <summary>
-	/// Adds a new move to the move history UI based on the latest half-move.
-	/// </summary>
-	/// <param name="latestHalfMove">The most recent half-move executed.</param>
-	/// <param name="latestTurnSide">The side that executed the move (complement of the current turn).</param>
-	private void AddMoveToHistory(HalfMove latestHalfMove, Side latestTurnSide) {
+
+
+
+
+
+
+/// <summary>
+/// Loads a game from the text entered in the game string input field.
+/// </summary>
+public void LoadGame()
+    {
+        resultText.gameObject.transform.parent.gameObject.SetActive(true);
+        resultText.gameObject.SetActive(true);
+        resultText.enabled = true;
+
+
+        if (NetworkManager.Singleton.IsServer)
+        {
+            resultText.gameObject.SetActive(true);
+            resultText.gameObject.transform.parent.gameObject.SetActive(true);
+
+            GameManager.Instance.LoadGame(GameStringInputField.text);
+            resultText.text = "Its White turn";
+        }
+        else
+        {
+            resultText.gameObject.SetActive(true);
+
+            resultText.gameObject.transform.parent.gameObject.SetActive(true);
+            StartCoroutine(DisplayMessageForSeconds("Only the host can load a game", 3));
+        }
+    }
+
+    private IEnumerator DisplayMessageForSeconds(string message, float seconds)
+    {
+        resultText.gameObject.SetActive(true);
+        resultText.gameObject.transform.parent.gameObject.SetActive(true);
+		resultText.enabled = true;
+        resultText.text = message;
+        yield return new WaitForSeconds(seconds);
+        bool isWhiteTurn = GameManager.Instance.isWhiteTurn;
+
+
+
+        resultText.text = isWhiteTurn ? "Its White turn" : "Its Black turn";
+    }
+
+    /// <summary>
+    /// Adds a new move to the move history UI based on the latest half-move.
+    /// </summary>
+    /// <param name="latestHalfMove">The most recent half-move executed.</param>
+    /// <param name="latestTurnSide">The side that executed the move (complement of the current turn).</param>
+    private void AddMoveToHistory(HalfMove latestHalfMove, Side latestTurnSide) {
 		// Remove any alternate history entries if the timeline is not up-to-date.
 		RemoveAlternateHistory();
 		

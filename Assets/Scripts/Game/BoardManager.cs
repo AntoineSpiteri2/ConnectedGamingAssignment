@@ -104,7 +104,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         //Debug.Log($"Spawning piece: {pieceColor} {pieceType} at {position} using path: {path}");
 
         GameObject pieceObject = Resources.Load("PieceSets/Marble/" + modelName) as GameObject;
-        pieceObject.name = $"{pieceColor}_{pieceType}_{position.File}{position.Rank}";
+        pieceObject.name = $"{pieceColor}_{pieceType}_{position.File}{position.Rank}"; // generate a unique name for the piece to prevent accidently moving other pieces and quick identification
         string pieceID = pieceObject.name;
 
         GameObject pieceGO = Instantiate(pieceObject, positionMap[position].transform);
@@ -113,8 +113,8 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         NetworkObject netObj = pieceGO.GetComponent<NetworkObject>();
         if (netObj != null)
         {
-            netObj.Spawn(); // Replicates the object to all clients  
-            GameManager.Instance.SyncPieceNameServerRpc(netObj.NetworkObjectId, pieceID); // Ensure all clients get the correct name
+            netObj.Spawn(); // Replicates the object to all clients  very stright forward indeed
+            GameManager.Instance.SyncPieceNameServerRpc(netObj.NetworkObjectId, pieceID); // Ensure all clients get the correct name cause funny unity netcode didn't do it for us thanks devs
 
 
             // Retrieve the parent's NetworkObject component  
@@ -125,7 +125,8 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
             {
                 // Correctly set the network parent  
                 netObj.TrySetParent(parentNetObj, true); // Set to false if you want to change local position  
-                GameManager.Instance.RequestSetParentClientRpc(netObj.NetworkObjectId, parentNetObj.NetworkObjectId);
+                GameManager.Instance.RequestSetParentClientRpc(netObj.NetworkObjectId, parentNetObj.NetworkObjectId); // thanks unitynet for not doing this for us  cause we need to do it manually
+                //force client to set parent cause unity netcode is bad and didn't think this is important
             }
             else
             {
