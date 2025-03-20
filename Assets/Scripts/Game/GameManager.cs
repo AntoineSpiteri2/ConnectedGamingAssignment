@@ -9,6 +9,8 @@ using Unity.Collections;
 using Unity.Netcode.Components;
 using System.Drawing;
 using System.Collections;
+//using UnityEditor.PackageManager;
+//using UnityEditor.PackageManager;
 
 
 /// <summary>
@@ -26,6 +28,10 @@ public class GameManager : NetworkBehaviour
         if (Instance == null) Instance = this;
 
     }
+
+
+
+
 
     public bool DebugMode = false;
 
@@ -542,12 +548,31 @@ public class GameManager : NetworkBehaviour
     }
     private void OnClientConnected(ulong clientId)
     {
+        if (int.Parse(clientId.ToString()) > 1)
+        {
+            DLCManager.Instance.userID = "1";
+            clientId = 1;
+        }
+        else
+        {
+            if (int.Parse(clientId.ToString()) == 1)
+            {
+                DLCManager.Instance.userID = "1";
+                clientId = 1;
+            } else
+            {
+                DLCManager.Instance.userID = "0";
+                clientId = 0;
+            }
+                
+        }
+
         connectedPlayers.Add(clientId);
-        DLCManager.Instance.userID = clientId.ToString();
-        DLCManager.Instance.LoadUserSelectedPFP(); // Auto-load stored PFP
+
+
 
         if (DebugMode) Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
-        LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // Load the default game state for all players as they connect host is responsable for saving the game state by keeping track the string of the game state
+        if (IsServer) LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // Load the default game state for all players as they connect host is responsable for saving the game state by keeping track the string of the game state
                                                                               //which they can easily do by saving that  text in the host and load back clients
         UpdateConnectedPlayersClientRpc(connectedPlayers.ToArray());
 
@@ -556,19 +581,46 @@ public class GameManager : NetworkBehaviour
         if (IsServer && connectedPlayers.Count >= 2)
         {
             if (DebugMode) Debug.Log("Two players connected, starting the game...");
+
         }
     }
 
     [ClientRpc]
     private void UpdateConnectedPlayersClientRpc(ulong[] playerIds)
     {
+
+
         // Use the received array to update a local list on the client.
         connectedPlayers = new List<ulong>(playerIds);
+        int id = int.Parse(GameManager.Instance.NetworkManager.LocalClientId.ToString());
+
+        if (int.Parse(id.ToString()) > 1)
+        {
+            DLCManager.Instance.userID = "1";
+            playerIds[0] = 0;
+            playerIds[1] = 1;
+
+        }
+        else if (IsServer)
+        {
+            DLCManager.Instance.userID = "0";
+            playerIds[0] = 0;
+            if (playerIds.Length > 1)
+            {
+                playerIds[1] = 1;
+            }
+        }
+
+        DLCManager.Instance.userID = id.ToString();
+
         if (DebugMode) Debug.Log("Updated connected players on client.");
+        DLCManager.Instance.LoadUserSelectedPFP(); // Auto-load stored PFP
+
     }
 
     private void OnClientDisconnected(ulong clientId)
     {
+        GameManager.Instance.NetworkManager.LocalClientId.ToString();
         connectedPlayers.Remove(clientId);
         if (DebugMode) Debug.Log($"[Server] Player {clientId} disconnected.");
 

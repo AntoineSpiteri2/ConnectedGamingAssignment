@@ -50,8 +50,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         {
             GameObject squareGO = preplacedSquares[i];
 
-            // Option: Validate the square's name to ensure it follows your chess notation
-            // For example, "a1", "b2", etc. You might have a helper method to convert that.
+
             Square square = StringToSquare(squareGO.name);
 
             // Add the square to the dictionary.

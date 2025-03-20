@@ -5,6 +5,8 @@ using Unity.Netcode.Transports.UTP;
 using System;
 using System.Text.RegularExpressions;
 using TMPro;
+using System.Net.Sockets;
+using System.Net;
 
 public class NetworkUI : MonoBehaviour
 {
@@ -20,6 +22,19 @@ public class NetworkUI : MonoBehaviour
     {
         ClientButton.onClick.AddListener(StartClient);
         HostButton.onClick.AddListener(StartHost);
+    }
+
+    private string GetLocalIPAddress()
+    {
+        var host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (var ip in host.AddressList)
+        {
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                return ip.ToString();
+            }
+        }
+        throw new Exception("No network adapters with an IPv4 address found.");
     }
 
     private void Start()
@@ -77,7 +92,12 @@ public class NetworkUI : MonoBehaviour
     {
         try
         {
-            transport.ConnectionData.Address = "0.0.0.0"; // Listen on all available network interfaces
+            // Get the LAN IP for advertising to clients
+            string localIP = GetLocalIPAddress();
+            Debug.Log("Host LAN IP is: " + localIP);
+
+            // Keep binding to all interfaces for listening
+            transport.ConnectionData.Address = "0.0.0.0";
 
             if (!NetworkManager.Singleton.StartHost())
             {
@@ -85,15 +105,16 @@ public class NetworkUI : MonoBehaviour
                 return;
             }
 
-            Debug.Log($"Server started listening on {transport.ConnectionData.Address} and port {transport.ConnectionData.Port}");
-            CheckIfRunningLocally();
+            Debug.Log($"Server started. Advertise this IP to clients: {localIP} and port {transport.ConnectionData.Port}");
             Destroy(Panel);
         }
         catch (Exception ex)
         {
-            if (GameManager.Instance.DebugMode) Debug.LogError($"Exception occurred while starting host: {ex.Message}");
+            if (GameManager.Instance.DebugMode)
+                Debug.LogError($"Exception occurred while starting host: {ex.Message}");
         }
     }
+
 
     private void CheckIfRunningLocally()
     {
