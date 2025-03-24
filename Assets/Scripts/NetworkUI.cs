@@ -8,12 +8,12 @@ using TMPro;
 using System.Net.Sockets;
 using System.Net;
 
-public class NetworkUI : MonoBehaviour
+public class NetworkUI : MonoBehaviourSingleton<NetworkUI>
 {
     [SerializeField] private Button ServerButton;
     [SerializeField] private Button ClientButton;
     [SerializeField] private Button HostButton;
-    [SerializeField] private GameObject Panel;
+    [SerializeField] public GameObject Panel;
     [SerializeField] private TMP_InputField IpText; // Changed to InputField
 
     private UnityTransport transport;
@@ -80,7 +80,7 @@ public class NetworkUI : MonoBehaviour
                 if (GameManager.Instance.DebugMode) Debug.LogError("Failed to start client.");
                 return;
             }
-            Destroy(Panel);
+            Panel.SetActive(false);
         }
         catch (Exception ex)
         {
@@ -106,7 +106,8 @@ public class NetworkUI : MonoBehaviour
             }
 
             Debug.Log($"Server started. Advertise this IP to clients: {localIP} and port {transport.ConnectionData.Port}");
-            Destroy(Panel);
+            Panel.SetActive(false);
+
         }
         catch (Exception ex)
         {
@@ -116,13 +117,13 @@ public class NetworkUI : MonoBehaviour
     }
 
 
-    private void CheckIfRunningLocally()
-    {
-        if (transport.ConnectionData.Address == "127.0.0.1")
-        {
-            if (GameManager.Instance.DebugMode) Debug.LogWarning("Server is listening locally (127.0.0.1) ONLY!");
-        }
-    }
+    //private void CheckIfRunningLocally()
+    //{
+    //    if (transport.ConnectionData.Address == "127.0.0.1")
+    //    {
+    //        if (GameManager.Instance.DebugMode) Debug.LogWarning("Server is listening locally (127.0.0.1) ONLY!");
+    //    }
+    //}
 
     private bool IsValidIPAddress(string ip)
     {

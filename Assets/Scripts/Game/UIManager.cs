@@ -44,7 +44,10 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 	[SerializeField, Range(-0.25f, 0.25f)] private float moveHistoryAlternateColorDarkenAmount = 0f;
 	[SerializeField] private GameObject DlcStore;
 
-
+	[SerializeField] public GameObject startNewGameButton;
+    [SerializeField] public GameObject loadGameButton;
+	[SerializeField] public GameObject saveGameButtonServer;
+	[SerializeField] public GameObject loadGameButtonServer;
 
 
     // Timeline to keep track of the full move UI elements in sequence.
@@ -84,7 +87,8 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 			backgroundColor.g - buttonColorDarkenAmount, 
 			backgroundColor.b - buttonColorDarkenAmount
 		);
-	}
+
+    }
 
 	/// <summary>
 	/// Handles the event when a new game starts.

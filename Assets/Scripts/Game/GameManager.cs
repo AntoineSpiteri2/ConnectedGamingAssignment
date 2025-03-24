@@ -9,6 +9,7 @@ using Unity.Collections;
 using Unity.Netcode.Components;
 using System.Drawing;
 using System.Collections;
+using UnityEngine.UI;
 //using UnityEditor.PackageManager;
 //using UnityEditor.PackageManager;
 
@@ -319,7 +320,7 @@ public class GameManager : NetworkBehaviour
         GetNumLegalMovesForCurrentPosition();
     
 
-            if (latestHalfMove.CausedCheckmate || latestHalfMove.CausedStalemate)
+        if (latestHalfMove.CausedCheckmate || latestHalfMove.CausedStalemate)
         {
             // Possibly broadcast game end
             bool isWhiteWin = latestHalfMove.CausedCheckmate && latestHalfMove.Piece.Owner == Side.White;
@@ -334,11 +335,12 @@ public class GameManager : NetworkBehaviour
         else
         {
             BoardManager.Instance.EnsureOnlyPiecesOfSideAreEnabled(SideToMove);
+            MoveExecutedEvent?.Invoke();
+            // Switch side to move
+            SideToMove = (SideToMove == Side.White) ? Side.Black : Side.White;
         }
 
-        MoveExecutedEvent?.Invoke();
-        // Switch side to move
-        SideToMove = (SideToMove == Side.White) ? Side.Black : Side.White;
+
         return true;
     }
 
@@ -475,6 +477,18 @@ public class GameManager : NetworkBehaviour
             WhitePFP.Value = "";
             BlackPFP.Value = "";
 
+
+                UIManager.Instance.startNewGameButton.gameObject.GetComponent<Button>().interactable = true;
+                UIManager.Instance.loadGameButton.gameObject.GetComponent<Button>().interactable = true;
+                UIManager.Instance.saveGameButtonServer.gameObject.GetComponent<Button>().interactable = true;
+                UIManager.Instance.loadGameButtonServer.gameObject.GetComponent<Button>().interactable = true;
+            
+
+
+        }
+        else
+        {
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
         }
     }
 
@@ -570,9 +584,8 @@ public class GameManager : NetworkBehaviour
         connectedPlayers.Add(clientId);
 
 
-
         if (DebugMode) Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
-        if (IsServer) LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // Load the default game state for all players as they connect host is responsable for saving the game state by keeping track the string of the game state
+        LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // Load the default game state for all players as they connect host is responsable for saving the game state by keeping track the string of the game state
                                                                               //which they can easily do by saving that  text in the host and load back clients
         UpdateConnectedPlayersClientRpc(connectedPlayers.ToArray());
 
@@ -627,29 +640,72 @@ public class GameManager : NetworkBehaviour
 
 
 
-        // Check if the host (server) disconnected
-        if (clientId == NetworkManager.ServerClientId)
-        {
-            if (DebugMode) Debug.Log("Host disconnected! Resetting game.");
-            ResetGame();
+        //// Check if the host (server) disconnected
+        //if (clientId == NetworkManager.ServerClientId)
+        //{
+        //    if (DebugMode) Debug.Log("Host disconnected! Resetting game.");
+        //    ResetGame();
 
-            // Optionally, notify all clients that the session has ended
-            NotifyGameEndClientRpc(false, false);
-        }
-        else if (IsServer && connectedPlayers.Count == 0)
+        //    // Optionally, notify all clients that the session has ended
+        //    NotifyGameEndClientRpc(false, false);
+        //    //UIManager.Instance.UpdateBoardTurn("Host disconnected. Black wins Resetting game...");
+        //}
+        //else if (!IsServer )
+        //{
+        //    //UIManager.Instance.UpdateBoardTurn("Client disconnected. White wins Resetting game...");
+        //    ResetGame();
+        //}
+
+
+        // 1. If the host (server) has disconnected...
+        if (int.Parse(clientId.ToString()) == 0)
         {
-            if (DebugMode) Debug.Log("All players disconnected. Resetting game.");
-            ResetGame();
+            if (DebugMode) Debug.Log("Host disconnected! Resetting game...");
+
+            // Shut down the network. This also triggers OnClientDisconnectCallback
+            // for clients, letting them know the server is gone.
+            StartNewGame();
+            NetworkManager.Singleton.Shutdown();
+
+            // If we're on the client, we can show the UI again
+            if (NetworkUI.Instance != null)
+            {
+                NetworkUI.Instance.Panel.SetActive(true);
+
+            }
+
+            // If you have a special "back to menu" flow, do that here...
+            // e.g. SceneManager.LoadScene("MainMenu");
+            return;
+        }
+
+        // 2. Otherwise, a "regular" client is disconnecting:
+        //    If that regular client is "me," then also reset.
+        if (int.Parse(clientId.ToString()) >= 1)
+        {
+            if (DebugMode) Debug.Log("Local client disconnected, shutting down and returning to menu...");
+            StartNewGame();
+            NetworkManager.Singleton.Shutdown();
+
+            if (NetworkUI.Instance != null)
+            {
+                NetworkUI.Instance.Panel.SetActive(true);
+            }
+
+            return;
         }
     }
 
 
-    private void ResetGame()
-    {
-        if (DebugMode) Debug.Log("[Server] Resetting game...");
-        StartNewGame();
-        destroyedPieces.Clear();
-    }
+    //private void ResetGame()
+    //{
+    //    if (DebugMode) Debug.Log("[Server/Client] Resetting game...");
+    //    NetworkUI.Instance.Panel.SetActive(true);
+    //    NetworkManager.Singleton.Shutdown();
+
+    //    //LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+    //    //destroyedPieces.Clear();
+    //}
 
     /// <summary>
     /// Return an ElectedPiece enum from the name "Queen", "Knight", etc.
