@@ -153,7 +153,7 @@ public class GameManager : NetworkBehaviour
     // Cancellation token source for asynchronous promotion UI tasks.
     public CancellationTokenSource promotionUITaskCancellationTokenSource;
     // Stores the user's choice for promotion; initialised to none.
-    private ElectedPiece userPromotionChoice = ElectedPiece.None;
+    private TaskCompletionSource<ElectedPiece> promotionChoiceTCS;
     // Mapping of game serialization types to their corresponding serializers.
     private Dictionary<GameSerializationType, IGameSerializer> serializersByType;
     // Currently selected serialization type (default is FEN).
@@ -348,16 +348,16 @@ public class GameManager : NetworkBehaviour
     /// Blocks until the user selects a piece for pawn promotion.
     /// </summary>
     /// <returns>The elected promotion piece chosen by the user.</returns>
-    public ElectedPiece GetUserPromotionPieceChoice()
-    {
-        // Wait until the user selects a promotion piece.
-        while (userPromotionChoice == ElectedPiece.None) { }
+    //public ElectedPiece GetUserPromotionPieceChoice()
+    //{
+    //    // Wait until the user selects a promotion piece.
+    //    while (userPromotionChoice == ElectedPiece.None) { }
 
-        ElectedPiece result = userPromotionChoice;
-        // Reset the user promotion choice.
-        userPromotionChoice = ElectedPiece.None;
-        return result;
-    }
+    //    ElectedPiece result = userPromotionChoice;
+    //    // Reset the user promotion choice.
+    //    userPromotionChoice = ElectedPiece.None;
+    //    return result;
+    //}
 
     /// <summary>
     /// Allows the user to elect a promotion piece.
@@ -365,7 +365,7 @@ public class GameManager : NetworkBehaviour
     /// <param name="choice">The elected promotion piece.</param>
     public void ElectPiece(ElectedPiece choice)
     {
-        userPromotionChoice = choice;
+        promotionChoiceTCS?.TrySetResult(choice);
     }
 
     /// <summary>
@@ -675,7 +675,7 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            DLCManager.Instance.userID = "-1"; // Fallback if unexpected
+            DLCManager.Instance.userID = "1"; // Fallback if unexpected
         }
 
         if (DebugMode) Debug.Log($"[CLIENT] DLC userID set to {DLCManager.Instance.userID}");
@@ -1150,7 +1150,8 @@ public class GameManager : NetworkBehaviour
         if (DebugMode) Debug.Log("[Client] The server wants us to pick a promotion piece!");
 
         // Await the asynchronous user input (e.g., promotion piece selection).
-        ElectedPiece choice = await Task.Run(GetUserPromotionPieceChoice, promotionUITaskCancellationTokenSource.Token);
+        promotionChoiceTCS = new TaskCompletionSource<ElectedPiece>();
+        ElectedPiece choice = await promotionChoiceTCS.Task;
 
         // Deactivate the promotion UI and re-enable all pieces.
         UIManager.Instance.SetActivePromotionUI(false);
