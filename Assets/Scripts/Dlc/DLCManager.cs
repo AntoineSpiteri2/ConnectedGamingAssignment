@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using UnityEngine.Networking;
 using Unity.Netcode;
 
-public class DLCManager : MonoBehaviour
+public class DLCManager : NetworkBehaviour
 {
     public GameObject[] storeItemPrefab;  // Prefabs for store items (Image, Buy, and Use buttons)
     private FirebaseFirestore db;
@@ -172,14 +172,15 @@ public class DLCManager : MonoBehaviour
         {
             { "Coins", userCoins }
         });
-
+        AnalyticsLogger.LogDLCPurchased(userID, pfpID);
         if (int.Parse(userID) == 0)
         {
             // Mark as purchased in Firestore
                 db.Collection("PFPs").Document(pfpID).UpdateAsync(new Dictionary<string, object>
             {
-                { "BlackOwned", false },
-                { "WhiteOwned", true }
+                { "WhiteOwned", true },
+                { "WhiteUse", true }
+
             }).ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
@@ -196,8 +197,8 @@ public class DLCManager : MonoBehaviour
             // Mark as purchased in Firestore
             db.Collection("PFPs").Document(pfpID).UpdateAsync(new Dictionary<string, object>
             {
-                { "BlackOwned", false },
-                { "WhiteOwned", true }
+                { "BlackOwned", true },
+                { "BlackUse", true }
             }).ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
@@ -245,7 +246,7 @@ public class DLCManager : MonoBehaviour
 
         // Load the image for the respective player
         StartCoroutine(LoadPFPForPlayer(imageURL, userID));
-        syncPfpPicture(imageURL, userID);
+        syncPfpPictureServerRpc(imageURL, userID);
 
         // Sync across all clients
         GameManager.Instance.SetPlayerPFPServerRpc(NetworkManager.Singleton.LocalClientId, pfpID);
@@ -253,14 +254,14 @@ public class DLCManager : MonoBehaviour
 
 
     [ServerRpc(RequireOwnership = false)]
-    public void syncPfpPicture(string imageurl, string playerid)
+    public void syncPfpPictureServerRpc(string imageurl, string playerid)
     {
-        setRespectivePLayerPfp(imageurl, playerid);
+        setRespectivePLayerPfpClientRpc(imageurl, playerid);
     }
 
 
     [ClientRpc]
-    public void setRespectivePLayerPfp(string imageurl, string playerid)
+    public void setRespectivePLayerPfpClientRpc(string imageurl, string playerid)
     {
         Debug.Log($" [Client] Applying PFP {imageurl} for player {playerid}");
 

@@ -101,7 +101,13 @@ public class VisualPiece : MonoBehaviour
     private bool IsLocalPlayerTurn()
     {
         ulong localId = GameManager.Instance.LocalClientId;
-        Side currentTurn = GameManager.Instance.SideToMove; // Get side to move from GameManager
+        Side currentTurn = GameManager.Instance.SideToMove;
+
+            if (localId > 1)
+            {
+                localId = 1;
+            }
+
 
         if (GameManager.Instance.connectedPlayers.Count < 2)
         {
@@ -109,12 +115,19 @@ public class VisualPiece : MonoBehaviour
             return false;
         }
 
-        bool isLocalTurn = (currentTurn == Side.White && localId == GameManager.Instance.connectedPlayers[0]) ||
-                           (currentTurn == Side.Black && localId == GameManager.Instance.connectedPlayers[1]);
+        ulong whiteId = GameManager.Instance.connectedPlayers[0];
+        ulong blackId = GameManager.Instance.connectedPlayers[1];
 
+        // Even if localId is 2, it may still be playing as white if we remapped them in connectedPlayers
+        if (GameManager.Instance.DebugMode)
+        {
+            Debug.Log($"[CLIENT] My ID: {localId}, White: {whiteId}, Black: {blackId}, Current Turn: {currentTurn}");
+        }
 
-        return isLocalTurn;
+        return (currentTurn == Side.White && localId == whiteId) ||
+               (currentTurn == Side.Black && localId == blackId);
     }
+
 
 
     /// <summary>

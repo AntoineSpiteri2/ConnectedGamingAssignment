@@ -257,24 +257,36 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     /// <summary>
     /// Clears all visual pieces from the board.
     /// </summary>
-  public void ClearBoard()
-{
-    VisualPiece[] pieces = GetComponentsInChildren<VisualPiece>(true);
-    foreach (VisualPiece visualPiece in pieces)
+    public void ClearBoard()
     {
-        if (visualPiece.TryGetComponent(out NetworkObject netObj))
+        VisualPiece[] pieces = GetComponentsInChildren<VisualPiece>(true);
+        foreach (VisualPiece visualPiece in pieces)
         {
-            if (NetworkManager.Singleton.IsServer)
-                netObj.Despawn(true);
+            if (visualPiece.TryGetComponent(out NetworkObject netObj))
+            {
+                if (NetworkManager.Singleton.IsServer)
+                {
+                    if (netObj.IsSpawned)
+                    {
+                        netObj.Despawn(true);
+                    }
+                    else
+                    {
+                        if (GameManager.Instance.DebugMode)
+                            Debug.LogWarning($"[ClearBoard] Tried to despawn {visualPiece.name}, but it's not spawned.");
+                    }
+                }
+                else
+                {
+                    Destroy(visualPiece.gameObject);
+                }
+            }
             else
+            {
                 Destroy(visualPiece.gameObject);
-        }
-        else
-        {
-            Destroy(visualPiece.gameObject);
+            }
         }
     }
-}
 
 
     /// <summary>

@@ -51,11 +51,21 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 
 
     // Timeline to keep track of the full move UI elements in sequence.
-    private Timeline<FullMoveUI> moveUITimeline;
+    public Timeline<FullMoveUI> moveUITimeline;
 	// Computed button colour based on the background colour and darkening factor.
 	private Color buttonColor;
 
     public string playerId = "testUser"; // Change this to use Firebase Auth for real users
+
+
+    void LateUpdate()
+    {
+        if (resultText != null && !resultText.gameObject.activeSelf)
+        {
+            Debug.LogWarning("[FORCE FIX] Re-enabling resultText");
+            resultText.gameObject.SetActive(true); // optional temporary fix
+        }
+    }
 
 
 
@@ -110,9 +120,9 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 
 		resultText.text = "Its White turn";
 
-		// Hide the result text (game outcome) since the game has just started.
-		//resultText.gameObject.SetActive(false);
-	}
+        // Hide the result text (game outcome) since the game has just started.
+        resultText.gameObject.SetActive(true); // ✅ Make sure it's visible
+    }
 
 
 
@@ -263,6 +273,10 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
             resultText.gameObject.SetActive(true);
 
             resultText.text = "Its White turn";
+            for (int i = 0; i < moveHistoryContentParent.transform.childCount; i++)
+            {
+                Destroy(moveHistoryContentParent.transform.GetChild(i).gameObject);
+            }
 
         }
         else
@@ -278,7 +292,15 @@ public class UIManager : MonoBehaviourSingleton<UIManager> {
 
 
 
+	public void CLearBoardhistory()
+	{
+        BoardManager.Instance.ClearBoard();
 
+        for (int i = 0; i < moveHistoryContentParent.transform.childCount; i++)
+        {
+            Destroy(moveHistoryContentParent.transform.GetChild(i).gameObject);
+        }
+    }
 
 
 
@@ -299,6 +321,11 @@ public void LoadGame()
 
             GameManager.Instance.LoadGame(GameStringInputField.text);
             resultText.text = "Its White turn";
+            for (int i = 0; i < moveHistoryContentParent.transform.childCount; i++)
+            {
+                Destroy(moveHistoryContentParent.transform.GetChild(i).gameObject);
+            }
+
         }
         else
         {

@@ -222,35 +222,31 @@ public class GameManager : NetworkBehaviour
 
     public void LoadGame(string serialized)
     {
-
-
-
-        // Deserialize the FEN into a structured game state
         game = new FENSerializer().Deserialize(serialized);
 
         char turnIndicator = serialized.Split(' ')[1][0];
         Side activePlayer = (turnIndicator == 'w') ? Side.White : Side.Black;
 
+        isWhiteTurn = (turnIndicator == 'w');
 
+        SideToMove = activePlayer; // ✅ ensure logic sync
 
-        // Clear visual board but don't destroy pre-placed pieces
+        UIManager.Instance.moveUITimeline.Clear();
+
+        if (DebugMode) Debug.Log($"[GameManager] Loaded game with active player: {activePlayer}");
+
         BoardManager.Instance.ClearBoard();
 
-        // Retrieve pieces from game state and move them
         foreach ((Square position, Piece piece) in GameManager.Instance.CurrentPieces)
         {
             BoardManager.Instance.CreateAndPlacePieceGO(piece, position);
-
         }
 
-        //EndTurn();
-
-        // Update UI
-        //UIManager.Instance.UpdateGameStringInputField();
         NotifyTurnChangeClientRpc(isWhiteTurn);
         UpdateTurnIndicatorClientRpc(isWhiteTurn);
         UIManager.Instance.ValidateIndicators();
     }
+
 
 
     [ServerRpc(RequireOwnership = false)]
@@ -324,6 +320,8 @@ public class GameManager : NetworkBehaviour
         {
             // Possibly broadcast game end
             bool isWhiteWin = latestHalfMove.CausedCheckmate && latestHalfMove.Piece.Owner == Side.White;
+            AnalyticsLogger.LogMatchEnded(DLCManager.Instance.userID, isWhiteWin ? "White" : "Black");
+
             if (DebugMode) Debug.Log("[GameManager] Game End condition met. Invoking GameEndedEvent.");
 
 
@@ -560,8 +558,34 @@ public class GameManager : NetworkBehaviour
             Debug.Log($"[CLIENT] Updated Ping for Client {clientId}: {ping:F1} ms");
         }
     }
+
+    private HashSet<ulong> hasConnectedBefore = new HashSet<ulong>();
+
+    private ulong whitePlayerId = ulong.MaxValue;
+    private ulong blackPlayerId = ulong.MaxValue;
+    private Dictionary<Side, ulong> sideToClientId = new Dictionary<Side, ulong>();
+
     private void OnClientConnected(ulong clientId)
     {
+
+
+
+        //force the server to be white ghax a weird bug thxxx unity
+
+        //if (IsServer && clientId == NetworkManager.ServerClientId)
+        //{
+        //    side
+        //}
+
+        if (!sideToClientId.ContainsValue(clientId))
+        {
+            if (!sideToClientId.ContainsKey(Side.White))
+                sideToClientId[Side.White] = clientId;
+            else if (!sideToClientId.ContainsKey(Side.Black))
+                sideToClientId[Side.Black] = clientId;
+        }
+
+
         if (int.Parse(clientId.ToString()) > 1)
         {
             DLCManager.Instance.userID = "1";
@@ -581,54 +605,81 @@ public class GameManager : NetworkBehaviour
                 
         }
 
-        connectedPlayers.Add(clientId);
+
+        if (DebugMode) Debug.Log($"[SERVER] Client connected with ID: {clientId}");
+
+        // Assign player slot manually for reconnect cases
+        if (!connectedPlayers.Contains(clientId))
+        {
+            // Always check if slot 0 (White) is disconnected
+            if (connectedPlayers.Count == 0 ||
+                !NetworkManager.Singleton.ConnectedClients.ContainsKey(connectedPlayers[0]))
+            {
+                if (connectedPlayers.Count == 0)
+                    connectedPlayers.Insert(0, clientId);
+                else
+                    connectedPlayers[0] = clientId;
+
+                if (DebugMode) Debug.Log($"[SERVER] Assigned {clientId} to White slot.");
+            }
+            // Then try slot 1 (Black)
+            else if (connectedPlayers.Count == 1 ||
+                     !NetworkManager.Singleton.ConnectedClients.ContainsKey(connectedPlayers[1]))
+            {
+                if (connectedPlayers.Count == 1)
+                    connectedPlayers.Insert(1, clientId);
+                else
+                    connectedPlayers[1] = clientId;
+
+                if (DebugMode) Debug.Log($"[SERVER] Assigned {clientId} to Black slot.");
+            }
+            else
+            {
+                if (DebugMode) Debug.LogWarning($"[SERVER] More than 2 players tried to connect. Rejecting client {clientId}.");
+                return; // Too many players
+            }
+        }
 
 
-        if (DebugMode) Debug.Log($"Player {clientId} connected. Total Players: {connectedPlayers.Count}");
-        LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"); // Load the default game state for all players as they connect host is responsable for saving the game state by keeping track the string of the game state
-                                                                              //which they can easily do by saving that  text in the host and load back clients
+
+        // Load game state from host copy
+        LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+        // Push updated player slots to everyone
         UpdateConnectedPlayersClientRpc(connectedPlayers.ToArray());
 
 
-        // If at least two players are connected, start the game
         if (IsServer && connectedPlayers.Count >= 2)
         {
-            if (DebugMode) Debug.Log("Two players connected, starting the game...");
-
+            AnalyticsLogger.LogMatchStarted(DLCManager.Instance.userID);
+            if (DebugMode) Debug.Log("Two players connected, game ready.");
         }
     }
+
+
 
     [ClientRpc]
     private void UpdateConnectedPlayersClientRpc(ulong[] playerIds)
     {
+        connectedPlayers = new List<ulong>(playerIds); // [0] = White, [1] = Black
 
+        ulong localId = GameManager.Instance.LocalClientId;
 
-        // Use the received array to update a local list on the client.
-        connectedPlayers = new List<ulong>(playerIds);
-        int id = int.Parse(GameManager.Instance.NetworkManager.LocalClientId.ToString());
-
-        if (int.Parse(id.ToString()) > 1)
+        if (playerIds.Length > 0 && localId == playerIds[0])
         {
-            DLCManager.Instance.userID = "1";
-            playerIds[0] = 0;
-            playerIds[1] = 1;
-
+            DLCManager.Instance.userID = "0"; // White
         }
-        else if (IsServer)
+        else if (playerIds.Length > 1 && localId == playerIds[1])
         {
-            DLCManager.Instance.userID = "0";
-            playerIds[0] = 0;
-            if (playerIds.Length > 1)
-            {
-                playerIds[1] = 1;
-            }
+            DLCManager.Instance.userID = "1"; // Black
+        }
+        else
+        {
+            DLCManager.Instance.userID = "-1"; // Fallback if unexpected
         }
 
-        DLCManager.Instance.userID = id.ToString();
-
-        if (DebugMode) Debug.Log("Updated connected players on client.");
-        DLCManager.Instance.LoadUserSelectedPFP(); // Auto-load stored PFP
-
+        if (DebugMode) Debug.Log($"[CLIENT] DLC userID set to {DLCManager.Instance.userID}");
+        DLCManager.Instance.LoadUserSelectedPFP();
     }
 
     private void OnClientDisconnected(ulong clientId)
@@ -637,9 +688,7 @@ public class GameManager : NetworkBehaviour
         connectedPlayers.Remove(clientId);
         if (DebugMode) Debug.Log($"[Server] Player {clientId} disconnected.");
 
-
-
-
+        UIManager.Instance.CLearBoardhistory();
         //// Check if the host (server) disconnected
         //if (clientId == NetworkManager.ServerClientId)
         //{
@@ -664,7 +713,7 @@ public class GameManager : NetworkBehaviour
 
             // Shut down the network. This also triggers OnClientDisconnectCallback
             // for clients, letting them know the server is gone.
-            StartNewGame();
+            //LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
             NetworkManager.Singleton.Shutdown();
 
             // If we're on the client, we can show the UI again
@@ -684,7 +733,7 @@ public class GameManager : NetworkBehaviour
         if (int.Parse(clientId.ToString()) >= 1)
         {
             if (DebugMode) Debug.Log("Local client disconnected, shutting down and returning to menu...");
-            StartNewGame();
+            //LoadGame("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
             NetworkManager.Singleton.Shutdown();
 
             if (NetworkUI.Instance != null)
@@ -838,6 +887,7 @@ public class GameManager : NetworkBehaviour
             RejectMoveClientRpc(moveJson);
             return;
         }
+
 
         PromotionMove promoMove = move as PromotionMove;
         // If the move is a PromotionMove, set the promotion piece if provided in the DTO
