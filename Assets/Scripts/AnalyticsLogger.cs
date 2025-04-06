@@ -1,66 +1,56 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using Unity.Services.Analytics;
 using Unity.Services.Core;
+using Unity.Services.Analytics;
 
 public class AnalyticsLogger : MonoBehaviour
 {
     private async void Awake()
     {
-        if (!UnityServices.State.Equals(ServicesInitializationState.Initialized))
+        if (UnityServices.State != ServicesInitializationState.Initialized)
         {
             try
             {
                 await UnityServices.InitializeAsync();
-
-                // For Unity's new analytics, you also need to check for required consents:
-                await AnalyticsService.Instance.CheckForRequiredConsents();
-
-                Debug.Log("[Analytics] Unity Services Initialized and consents checked.");
+                AnalyticsService.Instance.StartDataCollection();
+                Debug.Log("[Analytics] Initialized and started data collection.");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.LogError($"[Analytics] Initialization failed: {e.Message}");
+                Debug.LogError($"[Analytics] Initialization failed: {ex.Message}");
             }
         }
     }
 
     public static void LogMatchStarted(string userId)
     {
-        Dictionary<string, object> data = new Dictionary<string, object>
+        CustomEvent evt = new CustomEvent("match_started")
         {
-            { "eventType", "match_started" },
-            { "userId", userId },
-            { "timestamp", DateTime.UtcNow.ToString("o") }
+            { "user_id", userId }
         };
-        AnalyticsService.Instance.SendCustomEvent("match_started", data);
-        Debug.Log("[Analytics] Match started event logged.");
+        AnalyticsService.Instance.RecordEvent(evt);
+        Debug.Log("[Analytics] Logged: match_started");
     }
 
     public static void LogMatchEnded(string userId, string result)
     {
-        Dictionary<string, object> data = new Dictionary<string, object>
+        CustomEvent evt = new CustomEvent("match_ended")
         {
-            { "eventType", "match_ended" },
-            { "userId", userId },
-            { "result", result }, // "White Wins", "Black Wins", or "Draw"
-            { "timestamp", DateTime.UtcNow.ToString("o") }
+            { "user_id", userId },
+            { "result", result }
         };
-        AnalyticsService.Instance.SendCustomEvent("match_ended", data);
-        Debug.Log("[Analytics] Match ended event logged.");
+        AnalyticsService.Instance.RecordEvent(evt);
+        Debug.Log("[Analytics] Logged: match_ended");
     }
 
     public static void LogDLCPurchased(string userId, string dlcId)
     {
-        Dictionary<string, object> data = new Dictionary<string, object>
+        CustomEvent evt = new CustomEvent("dlc_purchase")
         {
-            { "eventType", "dlc_purchase" },
-            { "userId", userId },
-            { "dlcId", dlcId },
-            { "timestamp", DateTime.UtcNow.ToString("o") }
+            { "user_id", userId },
+            { "dlc_id", dlcId }
         };
-        AnalyticsService.Instance.SendCustomEvent("dlc_purchase", data);
-        Debug.Log("[Analytics] DLC purchase event logged.");
+        AnalyticsService.Instance.RecordEvent(evt);
+        Debug.Log("[Analytics] Logged: dlc_purchase");
     }
 }

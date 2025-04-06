@@ -561,8 +561,8 @@ public class GameManager : NetworkBehaviour
 
     private HashSet<ulong> hasConnectedBefore = new HashSet<ulong>();
 
-    private ulong whitePlayerId = ulong.MaxValue;
-    private ulong blackPlayerId = ulong.MaxValue;
+    //private ulong whitePlayerId = ulong.MaxValue;
+    //private ulong blackPlayerId = ulong.MaxValue;
     private Dictionary<Side, ulong> sideToClientId = new Dictionary<Side, ulong>();
 
     private void OnClientConnected(ulong clientId)
