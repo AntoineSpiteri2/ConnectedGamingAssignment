@@ -86,43 +86,49 @@ public class DLCManager : NetworkBehaviour
 
                     StartCoroutine(LoadImageFromURL(imageURL, imageComponent));
 
-                    // If already owned, disable Buy button and enable Use button
-                    if (int.Parse(userID) == 0)
+                    // 🧼 Clear old listeners to prevent stacking
+                    buyButton.onClick.RemoveAllListeners();
+                    useButton.onClick.RemoveAllListeners();
+
+                    // 🧠 Reset interactability
+                    buyButton.interactable = false;
+                    useButton.interactable = false;
+
+                    bool isWhite = int.Parse(userID) == 0;
+
+                    if (isWhite)
                     {
-                        if (whiteOwned && !blackOwned)
+                        if (whiteOwned)
                         {
-                            buyButton.interactable = false;
                             useButton.interactable = true;
                             useButton.onClick.AddListener(() => ApplyPFP(userID, imageURL));
                         }
                         else
                         {
-                            buyButton.onClick.AddListener(() => PurchasePFP(id, buyButton, useButton, imageURL));
                             buyButton.interactable = true;
-                            useButton.interactable = false;
-                        }
-                    } else
-                    {
-                        if (blackOwned && !whiteOwned)
-                        {
-                            buyButton.interactable = false;
-                            useButton.interactable = true;
-                            useButton.onClick.AddListener(() => ApplyPFP(userID, imageURL));
-                        }
-                        else
-                        {
                             buyButton.onClick.AddListener(() => PurchasePFP(id, buyButton, useButton, imageURL));
-                            buyButton.interactable = true;
-                            useButton.interactable = false;
                         }
                     }
-                    
+                    else // Black
+                    {
+                        if (blackOwned)
+                        {
+                            useButton.interactable = true;
+                            useButton.onClick.AddListener(() => ApplyPFP(userID, imageURL));
+                        }
+                        else
+                        {
+                            buyButton.interactable = true;
+                            buyButton.onClick.AddListener(() => PurchasePFP(id, buyButton, useButton, imageURL));
+                        }
+                    }
 
                     index++;
                 }
             }
         });
     }
+
 
     /// <summary>
     /// Downloads and sets the image from Firebase Storage.
@@ -164,74 +170,54 @@ public class DLCManager : NetworkBehaviour
             return;
         }
 
-        userCoins -= 10;
+        userCoins = userCoins - 10;
         CoinsText.text = "Coins: " + userCoins;
 
         // Update coins in Firestore
         db.Collection("Users").Document(userID).UpdateAsync(new Dictionary<string, object>
-        {
-            { "Coins", userCoins }
-        });
+    {
+        { "Coins", userCoins }
+    });
+
         AnalyticsLogger.LogDLCPurchased(userID, pfpID);
+
         if (int.Parse(userID) == 0)
         {
-            // Mark as purchased in Firestore
-                db.Collection("PFPs").Document(pfpID).UpdateAsync(new Dictionary<string, object>
-            {
-                { "WhiteOwned", true },
-                { "WhiteUse", true }
-
-            }).ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCompleted)
-                {
-                    Debug.Log($"PFP {pfpID} purchased!");
-                    buyButton.interactable = false;
-                    useButton.interactable = true;
-                    useButton.onClick.AddListener(() => ApplyPFP(pfpID, imageURL));
-                }
-            });
-
-        } else
-        {
-            // Mark as purchased in Firestore
             db.Collection("PFPs").Document(pfpID).UpdateAsync(new Dictionary<string, object>
-            {
-                { "BlackOwned", true },
-                { "BlackUse", true }
-            }).ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCompleted)
-                {
-                    Debug.Log($"PFP {pfpID} purchased!");
-                    buyButton.interactable = false;
-                    useButton.interactable = true;
-                    useButton.onClick.AddListener(() => ApplyPFP(pfpID, imageURL));
-                }
-            });
-        }
-            // Update coins in Firestore
-            db.Collection("Users").Document(userID).UpdateAsync(new Dictionary<string, object>
         {
-            { "Coins", userCoins }
+            { "WhiteOwned", true },
+            { "WhiteUse", true }
+        }).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                Debug.Log($"PFP {pfpID} purchased!");
+                buyButton.interactable = false;
+                useButton.interactable = true;
+                useButton.onClick.AddListener(() => ApplyPFP(pfpID, imageURL));
+            }
         });
+        }
+        else
+        {
+            db.Collection("PFPs").Document(pfpID).UpdateAsync(new Dictionary<string, object>
+        {
+            { "BlackOwned", true },
+            { "BlackUse", true }
+        }).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
+            {
+                Debug.Log($"PFP {pfpID} purchased!");
+                buyButton.interactable = false;
+                useButton.interactable = true;
+                useButton.onClick.AddListener(() => ApplyPFP(pfpID, imageURL));
+            }
+        });
+        }
 
-        //// Mark as purchased in Firestore
-        //db.Collection("PFPs").Document(pfpID).UpdateAsync(new Dictionary<string, object>
-        //{
-        //    { "BlackOwned", true },
-        //    { "WhiteOwned", true }
-        //}).ContinueWithOnMainThread(task =>
-        //{
-        //    if (task.IsCompleted)
-        //    {
-        //        Debug.Log($"PFP {pfpID} purchased!");
-        //        buyButton.interactable = false;
-        //        useButton.interactable = true;
-        //        useButton.onClick.AddListener(() => ApplyPFP(pfpID, imageURL));
-        //    }
-        //});
     }
+
 
     /// <summary>
     /// Applies the selected profile picture and syncs it across clients.
